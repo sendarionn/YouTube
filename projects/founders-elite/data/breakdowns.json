@@ -1,0 +1,130 @@
+{
+ "by_horizon": {
+  "le10": {
+   "n_named": 221,
+   "n_career": 200,
+   "age_median": 33.5,
+   "age_le25_pct": 12.5,
+   "age_40plus_pct": 18.0,
+   "years_before_median": 11.0,
+   "large_org_pct": 59.5,
+   "consulting_pct": 14.0,
+   "finance_pct": 19.0,
+   "net_megaventure_pct": 18.5,
+   "student_founder_pct": 7.0,
+   "no_prior_job_pct": 15.0,
+   "serial_pct": 25.5
+  },
+  "le20": {
+   "n_named": 474,
+   "n_career": 419,
+   "age_median": 33.0,
+   "age_le25_pct": 11.2,
+   "age_40plus_pct": 17.4,
+   "years_before_median": 10.0,
+   "large_org_pct": 54.9,
+   "consulting_pct": 14.3,
+   "finance_pct": 16.7,
+   "net_megaventure_pct": 12.6,
+   "student_founder_pct": 5.7,
+   "no_prior_job_pct": 12.4,
+   "serial_pct": 19.8
+  },
+  "all": {
+   "n_named": 596,
+   "n_career": 514,
+   "age_median": 32.0,
+   "age_le25_pct": 12.7,
+   "age_40plus_pct": 16.6,
+   "years_before_median": 10.0,
+   "large_org_pct": 51.9,
+   "consulting_pct": 12.8,
+   "finance_pct": 15.6,
+   "net_megaventure_pct": 11.9,
+   "student_founder_pct": 6.0,
+   "no_prior_job_pct": 13.4,
+   "serial_pct": 18.3
+  }
+ },
+ "years_to_ipo_by_group_target20": {
+  "large_org": {
+   "n": 230,
+   "years_to_ipo_median": 10.0,
+   "age_median": 35.0
+  },
+  "no_large_org": {
+   "n": 189,
+   "years_to_ipo_median": 12.0,
+   "age_median": 30.0
+  },
+  "student": {
+   "n": 24,
+   "years_to_ipo_median": 9.0,
+   "age_median": 23.0
+  },
+  "no_prior_job": {
+   "n": 52,
+   "years_to_ipo_median": 10.0,
+   "age_median": 25.0
+  },
+  "serial": {
+   "n": 83,
+   "years_to_ipo_median": 9.0,
+   "age_median": 36.0
+  },
+  "not_serial": {
+   "n": 336,
+   "years_to_ipo_median": 11.0,
+   "age_median": 32.0
+  }
+ },
+ "by_listing_half_target20": {
+  "2016-2020": {
+   "n_named": 225,
+   "n_career": 187,
+   "age_median": 32.0,
+   "age_le25_pct": 8.0,
+   "age_40plus_pct": 14.4,
+   "years_before_median": 9.0,
+   "large_org_pct": 58.3,
+   "consulting_pct": 16.6,
+   "finance_pct": 19.3,
+   "net_megaventure_pct": 11.8,
+   "student_founder_pct": 3.7,
+   "no_prior_job_pct": 10.2,
+   "serial_pct": 18.2
+  },
+  "2021-2025": {
+   "n_named": 249,
+   "n_career": 232,
+   "age_median": 33.0,
+   "age_le25_pct": 13.8,
+   "age_40plus_pct": 19.8,
+   "years_before_median": 11.0,
+   "large_org_pct": 52.2,
+   "consulting_pct": 12.5,
+   "finance_pct": 14.7,
+   "net_megaventure_pct": 13.4,
+   "student_founder_pct": 7.3,
+   "no_prior_job_pct": 14.2,
+   "serial_pct": 21.1
+  }
+ },
+ "edu_known_pct_by_year_target20": {
+  "2016": 4.1,
+  "2017": 8.3,
+  "2018": 10.2,
+  "2019": 4.4,
+  "2020": 2.2,
+  "2021": 7.4,
+  "2022": 39.7,
+  "2023": 36.5,
+  "2024": 26.0,
+  "2025": 42.9
+ },
+ "named_by_type_target20": {
+  "IND": 451,
+  "SPIN": 17,
+  "UNIV": 6
+ }
+}
