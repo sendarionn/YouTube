@@ -43,3 +43,7 @@
 # Python
 .venv/
 __pycache__/
+
+# library/ の素材原本（台帳 catalog.json は管理する）
+/library/**/files/
+/library/**/*.part

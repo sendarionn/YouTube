@@ -151,8 +151,12 @@ def srt(tl):
     return "\n".join(out)
 
 
-def render(tl, theme, out_path, fps=30, ffmpeg=None, captions=True, crf=18, loudness="I=-16:TP=-1.5:LRA=11"):
-    """全フレームを描いて ffmpeg に渡し、音声と合わせて MP4 にする"""
+def render(tl, theme, out_path, fps=30, ffmpeg=None, captions=True, crf=18, loudness="I=-16:TP=-1.5:LRA=11",
+           audio=None):
+    """全フレームを描いて ffmpeg に渡し、音声と合わせて MP4 にする
+
+    audio：BGM などを混ぜた音声（省略時はナレーションのみ）。captions=False で字幕を焼き込まない
+    """
     if ffmpeg is None:
         import imageio_ffmpeg
 
@@ -160,7 +164,7 @@ def render(tl, theme, out_path, fps=30, ffmpeg=None, captions=True, crf=18, loud
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     wav = out_path.with_suffix(".wav")
-    write_wav(wav, tl.audio)
+    write_wav(wav, tl.audio if audio is None else audio)
     n = int(np.ceil(tl.duration * fps))
     cmd = [ffmpeg, "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24",
            "-s", f"{theme.width}x{theme.height}", "-r", str(fps), "-i", "-", "-i", str(wav),

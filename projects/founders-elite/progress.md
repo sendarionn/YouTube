@@ -47,10 +47,12 @@ Python：リポジトリ直下の `.venv/bin/python`
 
 ## 動画「上場した創業者は、何歳で起業したのか」（2026-10-17）
 
-- 完成動画：`output/founders-elite/video/founders_age_career.mp4`（Git管理外、1920×1080、30fps、7分59秒。後半に創業者3人の事例の章）
+- 完成動画：`output/founders-elite/video/founders_age_career.mp4`（Git管理外、1920×1080、30fps、6分36秒。図解中心の映像、BGMつき、後半に創業者3人の事例の章）
 - 事例の調査：`cases.md`（3人の経歴・起業理由・出典）
 - 台本・構成・概要欄：`video/narration.md`、`video/scene_plan.md`、`video/description.md`、字幕 `video/captions.srt`
-- 共通ツール：リポジトリ直下の `tools/infographic/`（描画、音声合成、書き出し）
+- 共通ツール：リポジトリ直下の `tools/infographic/`（描画、アイコン、音声合成、BGM、書き出し）
+- BGM の原本と台帳：`library/bgm/`（原本は Git 管理外、台帳 `catalog.json` は管理）
+- 書き出しの設定とバージョン：`video/build_info.json`
 
 再生成
 
@@ -58,9 +60,11 @@ Python：リポジトリ直下の `.venv/bin/python`
    - `models/voicevox/` に公式リリース（voicevox_engine-macos-arm64-0.25.2.vvpp、SHA-256 1ba77670…）を `ditto -x -k` で展開済み
    - `models/voicevox/engine_ditto/run --host 127.0.0.1 --port 50021`
    - リポジトリ直下の `.venv` に `imageio-ffmpeg` と `requests` を入れる
+   - BGM の原本がなければ、書き出し時に台帳の URL から curl で取得し、sha1 を照合する
 2. `projects/founders-elite/video/` で `python build.py frames`：確認用の静止画（`output/founders-elite/video/frames/`）
-3. `python build.py render`：MP4、台本、字幕、読みの確認表（`output/founders-elite/video/yomi_check.md`）
+3. `python build.py render`：MP4（ナレーション＋BGM、字幕は焼き込まない）、台本、字幕、読みの確認表（`output/founders-elite/video/yomi_check.md`）、`build_info.json`
 4. テスト：リポジトリ直下で `python -m pytest tools/infographic/tests projects/founders-elite/tests`
 
 - 数値を変えた場合は `scripts/` で再集計してから書き出す。`scenes.py` は集計ファイル間の整合を確認し、合わなければ止まる
 - 音声は `build.py` の `BACKEND`（VOICEVOX、春日部つむぎ）。別の音声にする場合は `tools/infographic/tts.py` に `key()` と `synthesize()` を持つクラスを追加して差し替える（Open JTalk 用のクラスも残してある）
+- 再現性の制約：VOICEVOX のバージョンや辞書が変わると、音声と時刻が変わる可能性がある。使った設定は `build_info.json` に記録している
