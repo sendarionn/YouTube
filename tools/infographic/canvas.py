@@ -64,21 +64,83 @@ class Theme:
         return self._fonts[k]
 
 
+def _scale(v, k):
+    """座標（数値、組、組のリスト）を k 倍する"""
+    if isinstance(v, (int, float)):
+        return v * k
+    return type(v)(_scale(x, k) for x in v) if isinstance(v, tuple) else [_scale(x, k) for x in v]
+
+
+class ScaledDraw:
+    """ImageDraw の座標・線幅・角丸を k 倍して描く（スーパーサンプリング用）
+
+    描画側は出力解像度の座標のまま書き、内部では k 倍の画像に描く。最後に縮小して輪郭を滑らかにする
+    """
+
+    def __init__(self, draw, k):
+        self._d = draw
+        self.k = k
+
+    def _w(self, width):
+        return max(1, int(round(width * self.k)))
+
+    def rectangle(self, xy, fill=None, outline=None, width=1):
+        self._d.rectangle(_scale(xy, self.k), fill=fill, outline=outline, width=self._w(width))
+
+    def rounded_rectangle(self, xy, radius=0, fill=None, outline=None, width=1):
+        self._d.rounded_rectangle(_scale(xy, self.k), radius=radius * self.k, fill=fill, outline=outline, width=self._w(width))
+
+    def ellipse(self, xy, fill=None, outline=None, width=1):
+        self._d.ellipse(_scale(xy, self.k), fill=fill, outline=outline, width=self._w(width))
+
+    def polygon(self, xy, fill=None, outline=None, width=1):
+        self._d.polygon(_scale(xy, self.k), fill=fill, outline=outline, width=self._w(width))
+
+    def line(self, xy, fill=None, width=1, joint=None):
+        pts = _scale(xy, self.k)
+        w = self._w(width)
+        self._d.line(pts, fill=fill, width=w, joint=joint)
+        # 太い線の端を丸くし、継ぎ目の欠けを防ぐ
+        if w >= 4 and fill is not None:
+            r = w / 2
+            flat = [pts[i:i + 2] for i in range(0, len(pts), 2)] if pts and isinstance(pts[0], (int, float)) else pts
+            for x, y in flat:
+                self._d.ellipse((x - r, y - r, x + r, y + r), fill=fill)
+
+    def text(self, xy, s, font=None, fill=None, anchor=None):
+        self._d.text(_scale(xy, self.k), s, font=font, fill=fill, anchor=anchor)
+
+    def textlength(self, s, font=None):
+        return self._d.textlength(s, font=font) / self.k
+
+
+SUPERSAMPLING = 3  # 内部では出力の3倍の解像度で描き、縮小して輪郭を滑らかにする
+
+
 class Canvas:
-    def __init__(self, theme):
+    """1フレームの描画先。ss 倍の解像度で描き、finish() で出力解像度に縮小する"""
+
+    def __init__(self, theme, ss=SUPERSAMPLING):
         self.th = theme
-        self.img = Image.new("RGB", (theme.width, theme.height), theme.bg)
-        self.d = ImageDraw.Draw(self.img)
+        self.ss = ss
+        self.img = Image.new("RGB", (theme.width * ss, theme.height * ss), theme.bg)
+        self.d = ScaledDraw(ImageDraw.Draw(self.img), ss)
+
+    def finish(self):
+        return self.img.reduce(self.ss) if self.ss > 1 else self.img
 
     # 文字
+    def font(self, size, bold=False):
+        return self.th.font(int(round(size * self.ss)), bold)
+
     def text(self, xy, s, size=None, bold=False, color=None, alpha=1.0, anchor="la"):
         if alpha <= 0:
             return
-        f = self.th.font(size or self.th.size_body, bold)
+        f = self.font(size or self.th.size_body, bold)
         self.d.text(xy, s, font=f, fill=mix(color or self.th.text, self.th.bg, alpha), anchor=anchor)
 
     def text_width(self, s, size=None, bold=False):
-        return self.d.textlength(s, font=self.th.font(size or self.th.size_body, bold))
+        return self.d.textlength(s, font=self.font(size or self.th.size_body, bold))
 
     def wrap(self, s, width, size=None, bold=False):
         """幅に収まるよう1文字単位で折り返す（句読点・閉じ括弧を行頭に置かない）"""
@@ -111,11 +173,14 @@ class Canvas:
 
     # 画面の定型部分
     def title(self, s, alpha=1.0):
-        self.text((self.th.margin, 92), s, self.th.size_title, bold=True, alpha=alpha)
+        """見出し（画面中央の軸にそろえる）"""
+        self.text((self.th.width / 2, 80), s, self.th.size_title, bold=True, alpha=alpha, anchor="ma")
 
-    def note(self, s, alpha=1.0, y=890):
-        """分母・定義・出典などの注記（字幕帯より上の固定位置）"""
-        self.text((self.th.margin, y), s, self.th.size_note, color=self.th.sub, alpha=alpha)
+    def note(self, s, alpha=1.0, y=900):
+        """分母・定義・出典などの注記（中央の軸にそろえ、字幕帯より上の固定位置）"""
+        if self.text_width(s, self.th.size_note) > self.th.width - 2 * self.th.margin:
+            raise ValueError(f"注記が1行に収まりません：{s}")
+        self.text((self.th.width / 2, y), s, self.th.size_note, color=self.th.sub, alpha=alpha, anchor="ma")
 
     def caption(self, s):
         """字幕（画面下の帯。図表と重ならない位置に固定）"""
@@ -152,8 +217,9 @@ def vbars(cv, box, labels, values, progress=1.0, color=None, highlight=None, vma
         c = (colors[i] if colors else (color or th.accent) if highlight is None or i in highlight else th.muted)
         cv.rect((cx - bw / 2, base - h, cx + bw / 2, base), c, alpha)
         cv.text((cx, base + 14), lab, ls, color=th.sub, alpha=alpha, anchor="ma")
-        if progress > 0.98:
-            cv.text((cx, base - h - 12), fmt.format(v), vs, bold=True, alpha=alpha, anchor="md")
+        la = min(1.0, max(0.0, (progress - 0.8) / 0.2))
+        if la > 0:
+            cv.text((cx, base - h - 12), fmt.format(v), vs, bold=True, alpha=alpha * la, anchor="md")
 
 
 def hbars(cv, box, labels, values, progress=1.0, color=None, vmax=None, fmt="{}", alpha=1.0,
@@ -176,8 +242,9 @@ def hbars(cv, box, labels, values, progress=1.0, color=None, vmax=None, fmt="{}"
         cv.text((x0, cy), lab, s, alpha=a, anchor="lm")
         w = (bx1 - bx0) * v / vmax * p
         cv.rect((bx0, cy - bh / 2, bx0 + w, cy + bh / 2), c, a)
-        if p > 0.98:
-            cv.text((bx0 + w + 18, cy), fmt.format(v), s, bold=True, alpha=a, anchor="lm")
+        la = min(1.0, max(0.0, (p - 0.8) / 0.2))
+        if la > 0:
+            cv.text((bx0 + w + 18, cy), fmt.format(v), s, bold=True, alpha=a * la, anchor="lm")
     cv.line([(bx0, y0), (bx0, y0 + rh * n)], th.text, 2, alpha)
 
 

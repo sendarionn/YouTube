@@ -89,3 +89,20 @@ def test_grouped_sentence_has_no_gap(tmp_path, monkeypatch):
     # キャッシュから読んでも同じ
     tl2 = build_timeline(sc, Marked())
     assert tl2.scene_times[0].starts == st.starts
+
+
+def test_supersampled_canvas_outputs_target_size():
+    from tools.infographic.canvas import _scale
+
+    assert _scale([(1, 2), (3, 4)], 3) == [(3, 6), (9, 12)]
+    assert _scale((1, 2, 3, 4), 2) == (2, 4, 6, 8)
+    cv = Canvas(Theme(), ss=3)
+    cv.rect((10, 10, 100, 100), (0, 0, 0))
+    img = cv.finish()
+    assert img.size == (1920, 1080)
+    assert img.getpixel((50, 50)) == (0, 0, 0)
+    # 縁は中間色になる（アンチエイリアス）
+    cv2 = Canvas(Theme(), ss=3)
+    cv2.d.ellipse((100.3, 100.3, 300.3, 300.3), fill=(0, 0, 0))
+    edge = [cv2.finish().getpixel((x, 130))[0] for x in range(100, 140)]  # 曲線の部分
+    assert any(0 < v < 240 for v in edge)

@@ -14,7 +14,7 @@ sys.path.insert(0, str(HERE.parents[2]))
 
 from scenes import build, load_numbers  # noqa: E402
 from tools.infographic import bgm  # noqa: E402
-from tools.infographic.canvas import Theme  # noqa: E402
+from tools.infographic.canvas import SUPERSAMPLING, Theme  # noqa: E402
 from tools.infographic.config import OUTPUT  # noqa: E402
 from tools.infographic.tts import Voicevox  # noqa: E402
 from tools.infographic.video import build_timeline, frame_at, group_lines, render, srt  # noqa: E402
@@ -36,6 +36,7 @@ MUSIC_CREDIT = "Gymnopedie No. 1〜3（Erik Satie 作曲）Kevin MacLeod (incomp
 # 実測でナレーションと BGM の差が発話中に約20dB、無音部分で約13dB になる値（2026-10-17 調整）
 MIX = {"music_db": -13.0, "duck_db": -8.0, "crossfade": 4.0, "fade_in": 2.0, "fade_out": 5.0}
 CAPTIONS_ON_SCREEN = False
+FPS = 60  # 点の積み上げやクロスフェードを滑らかにするため（DESIGN.md「アニメーション」）
 
 
 def timeline():
@@ -61,6 +62,8 @@ def write_build_info(tl):
         "music": [{"id": t, "title": cat[t]["title"], "sha1": cat[t]["sha1"], "license": cat[t]["license"]} for t in MUSIC],
         "mix": MIX,
         "captions_on_screen": CAPTIONS_ON_SCREEN,
+        "fps": FPS,
+        "supersampling": SUPERSAMPLING,
         "python": platform.python_version(),
         "packages": {p: md.version(p) for p in ("numpy", "pandas", "pillow", "imageio-ffmpeg", "requests")},
     }
@@ -109,7 +112,7 @@ def main():
     if cmd == "frames":
         write_frames(tl, theme)
     elif cmd == "render":
-        out = render(tl, theme, OUT / f"{NAME}.mp4", captions=CAPTIONS_ON_SCREEN, audio=mixed_audio(tl))
+        out = render(tl, theme, OUT / f"{NAME}.mp4", fps=FPS, captions=CAPTIONS_ON_SCREEN, audio=mixed_audio(tl))
         write_build_info(tl)
         print(out)
     print(f"尺 {tl.duration:.1f}秒")

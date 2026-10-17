@@ -230,12 +230,13 @@ def people_grid(cv, box, total, n_on, cols, progress=1.0, on=None, off=None, alp
     cw = (x1 - x0) / cols
     ch = (y1 - y0) / rows
     s = min(cw * 0.95, ch * 0.78)
-    lit = int(round(n_on * progress))
+    # 強調は1人ずつ色が移り変わる（急に切り替えない）
+    lit = n_on * ease(progress)
+    on_c, off_c = on or cv.th.accent, off or cv.th.muted
     for k in range(total):
         r, c = divmod(k, cols)
-        is_on = k < lit
-        person(cv, x0 + cw * (c + 0.5), y0 + ch * (r + 0.5), s, (on or cv.th.accent) if is_on else (off or cv.th.muted),
-               alpha, cap=cap_on and is_on)
+        f = min(1.0, max(0.0, lit - k)) if k < n_on else 0.0
+        person(cv, x0 + cw * (c + 0.5), y0 + ch * (r + 0.5), s, mix(on_c, off_c, f), alpha, cap=cap_on and f > 0.5)
 
 
 def dot_hist(cv, box, values, vmin, vmax, progress=1.0, color_of=None, r=None, gap=2, alpha=1.0):
@@ -251,18 +252,20 @@ def dot_hist(cv, box, values, vmin, vmax, progress=1.0, color_of=None, r=None, g
         counts[v] = counts.get(v, 0) + 1
     mx = max(counts.values())
     d = r * 2 if r else min(colw - gap, (y1 - y0) / mx - gap)
-    shown = int(round(len(values) * ease(progress)))
-    order = sorted(values)
-    # 各列で下から積み、全体として progress の割合だけ表示する（列ごとに同じ割合）
+    f = ease(progress)
+    # 各列で下から積む。列ごとに同じ割合だけ表示し、いちばん上の点はフェードで現れる
     for v, cnt in counts.items():
         if v < vmin or v > vmax:
             continue
-        k_show = int(round(cnt * shown / max(len(order), 1)))
+        shown = cnt * f
         cx = x0 + colw * (v - vmin + 0.5)
         col = color_of(v) if color_of else cv.th.accent
-        for k in range(k_show):
+        for k in range(int(shown) + 1):
+            a = min(1.0, shown - k)
+            if a <= 0:
+                break
             cy = y1 - (k + 0.5) * (d + gap)
-            cv.d.ellipse((cx - d / 2, cy - d / 2, cx + d / 2, cy + d / 2), fill=mix(col, cv.th.bg, alpha))
+            cv.d.ellipse((cx - d / 2, cy - d / 2, cx + d / 2, cy + d / 2), fill=mix(col, cv.th.bg, alpha * a))
 
     def X(v):
         return x0 + colw * (v - vmin + 0.5)

@@ -69,7 +69,7 @@ def build_cases(N, C):
         cv.text((W // 2, 680), "では、彼らはなぜ会社を辞めて起業したのか？", th.size_title, bold=True, alpha=b, anchor="ma")
 
     door = Scene("事例：問い", [
-        Line(f"上場した会社の創業者の多くは、会社などで{N['yb_median']:g}年ほど働いてから、起業していました。"),
+        Line(f"上場した会社の創業者が、最初の就職から起業するまでの年数は、中央値で{N['yb_median']:g}年でした。"),
         Line("では、その経験は、起業にどうつながったのでしょうか。"),
     ], d_door, tail=1.4)
 
@@ -105,7 +105,7 @@ def build_cases(N, C):
         Line("ここからは、3人の創業者を例に見ていきます。"),
         Line("Sansanの寺田親弘さん、freeeの佐々木大輔さん、ビズリーチの南壮一郎さんです。",
              say="サンサンの寺田親弘さん、フリーの佐々木大輔さん、ビズリーチの南壮一郎さんです。"),
-        Line("3人とも、起業した年齢や、それまで働いた年数が、統計の真ん中あたりにいる人たちです。"),
+        Line("3人とも、起業した年齢と、それまで働いた年数が、中央値に近い人たちです。"),
         Line("ただし、起業の理由を本人がくわしく語っている人から選んだので、無作為に選んだ例ではありません。"),
     ], d_select, tail=1.4)
 
@@ -168,26 +168,29 @@ def build_cases(N, C):
         "出典：ニュースイッチ（2015年9月）、ライフハッカー・ジャパン（2014年1月、本人寄稿）、上場申請書類の役員略歴と沿革。上場時の社名はビジョナル")
 
     # 3人を並べる：決意（旗）と問題の順番
+    # 名前・アイコン3つ・順番のラベルを1つのグループとして中央に置く（アイコン列の左端 CX0）
+    CX0 = W / 2 - 380
+
     def d_compare(cv, st):
         th = cv.th
         cv.title("3人を並べると", ramp(st.t, 0, 0.4))
         rows = [("寺田さん", ["flag", "cards", "bulb"]), ("南さん", ["flag", "magnifier", "bulb"]),
                 ("佐々木さん", ["sheet", "bulb", "flag"])]
         a = ramp(st.t, st.at(0), 0.6)
-        common = st.t >= st.at(1)
+        common = ramp(st.t, st.at(1), 0.8)
         order = ramp(st.t, st.at(2), 0.6)
         for r, (name, seq) in enumerate(rows):
             y = 300 + r * 190 + (40 if r == 2 else 0)
-            cv.text((M, y), name, th.size_body, bold=True, alpha=a, anchor="lm")
+            cv.text((CX0 - 90, y), name, th.size_body, bold=True, alpha=a, anchor="rm")
             for k, name_i in enumerate(seq):
-                x = 620 + k * 380
+                x = CX0 + k * 380
                 problem = name_i in ("cards", "magnifier", "sheet")
-                ic.icon(cv, name_i, x, y, 110, th.accent if (problem and common) else th.text, a)
+                ic.icon(cv, name_i, x, y, 110, mix(th.accent, th.text, common) if problem else th.text, a)
                 if k:
                     arrow(cv, x - 380 + 80, x - 80, y, a)
-        cv.line([(M, 605), (W - M, 605)], th.grid, 3, order)
-        cv.text((W - M, 395), "決意が先", th.size_note + 6, bold=True, color=th.sub, alpha=order, anchor="ra")
-        cv.text((W - M, 720), "問題が先", th.size_note + 6, bold=True, color=th.sub, alpha=order, anchor="ra")
+        cv.line([(CX0 - 330, 605), (CX0 + 760 + 330, 605)], th.grid, 3, order)
+        cv.text((CX0 + 760 + 110, 395), "決意が先", th.size_note + 6, bold=True, color=th.sub, alpha=order, anchor="lm")
+        cv.text((CX0 + 760 + 110, 720), "問題が先", th.size_note + 6, bold=True, color=th.sub, alpha=order, anchor="lm")
         cv.note("本人の発言をもとに制作側が整理。旗＝起業すると決めたこと、青＝事業のもとになった問題、電球＝事業のアイデア", a)
 
     compare = Scene("事例：比較", [

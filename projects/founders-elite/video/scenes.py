@@ -163,12 +163,10 @@ def build(N, voice_credit, music_credit=""):
         th = cv.th
         cv.title("創業したときの年齢", ramp(st.t, 0, 0.4))
         p = ramp(st.t, st.at(1) - 0.3, 3.0)
-        hl = st.t >= st.at(3)
+        hl = ramp(st.t, st.at(3), 0.8)
 
         def color_of(v):
-            if not hl:
-                return th.accent
-            return th.accent if v <= 29 else th.muted
+            return th.accent if v <= 29 else mix(th.muted, th.accent, hl)
         X, _ = ic.dot_hist(cv, box_age, N["ages"], amin, amax, p, color_of=color_of)
         axis(cv, box_age[0], box_age[2], box_age[3] + 8, amin, amax, X, 5, "歳", ramp(st.t, st.at(0), 0.5))
         m = ramp(st.t, st.at(2), 0.6)
@@ -183,7 +181,7 @@ def build(N, voice_credit, music_credit=""):
     age = Scene("年齢", [
         Line("まず、創業したときの年齢です。"),
         Line("点の一つ一つが、創業者一人を表しています。"),
-        Line(f"多いのは20代の後半から30代で、真ん中の人は{N['age_median']:g}歳でした。"),
+        Line(f"多いのは20代の後半から30代で、中央値は{N['age_median']:g}歳でした。"),
         Line("20代のうちに起業した人も、3人に1人ほどいます。"),
     ], d_age, tail=1.6)
 
@@ -192,11 +190,13 @@ def build(N, voice_credit, music_credit=""):
         th = cv.th
         cv.title("学生のうちに起業したとみられる人", ramp(st.t, 0, 0.4))
         a = ramp(st.t, st.at(0), 0.6)
-        ic.people_grid(cv, (M + 40, 200, M + 40 + 760, 840), 100, round(N["student_pct"]), 10,
+        gx = (W - (700 + 120 + 460)) / 2
+        ic.people_grid(cv, (gx, 190, gx + 700, 850), 100, round(N["student_pct"]), 10,
                        ramp(st.t, st.at(1), 1.2), alpha=a, cap_on=True)
         b = ramp(st.t, st.at(1) + 1.0, 0.6)
-        cv.text((1080, 330), f"{pf(N['student_pct'])}%", th.size_number + 40, bold=True, color=th.accent, alpha=b)
-        cv.text((1080, 510), f"{N['student_n']}人 / {N['career_known']}人", th.size_body, alpha=b)
+        nx = gx + 700 + 120 + 230
+        cv.text((nx, 360), f"{pf(N['student_pct'])}%", th.size_number + 40, bold=True, color=th.accent, alpha=b, anchor="ma")
+        cv.text((nx, 540), f"{N['student_n']}人 / {N['career_known']}人", th.size_body, alpha=b, anchor="ma")
         cv.note("1人の形＝1%。役員略歴に勤務先がなく、創業時25歳以下の人。在学中かは未確認。アルバイト等は略歴に載らない",
                 ramp(st.t, st.at(2), 0.6))
 
@@ -229,8 +229,8 @@ def build(N, voice_credit, music_credit=""):
 
     years = Scene("職歴の年数", [
         Line("では、多くの人は、創業する前に何をしていたのでしょうか。"),
-        Line(f"最初に就職してから創業するまでの年数は、真ん中の人で{N['yb_median']:g}年でした。"),
-        Line("多くの人が、会社などで数年から十数年働いてから、自分の会社を立ち上げています。"),
+        Line(f"最初に就職してから創業するまでの年数は、中央値で{N['yb_median']:g}年でした。"),
+        Line("会社などで数年から十数年働いてから、自分の会社を立ち上げた人が中心です。"),
         Line("この年数には、転職や、別の会社を立ち上げた期間も含まれます。"),
     ], d_years, tail=1.4)
 
@@ -271,12 +271,13 @@ def build(N, voice_credit, music_credit=""):
         def X(v):
             return x0 + (x1 - x0) * (v - lo) / (hi - lo)
 
-        a = ramp(st.t, st.at(1), 0.6)
-        if st.t < st.at(2):
+        out = 1 - ramp(st.t, st.at(2), 0.4)
+        a = ramp(st.t, st.at(1), 0.6) * out
+        if st.t < st.at(2) + 0.4:
             cv.line([(x0, y), (x1, y)], th.grid, 4, a)
             for v in range(lo, hi + 1, 10):
                 cv.text((X(v), y + 16), f"{v}歳", th.size_note + 2, color=th.sub, alpha=a, anchor="ma")
-            b = ramp(st.t, st.at(1) + 0.8, 0.8)
+            b = ramp(st.t, st.at(1) + 0.8, 0.8) * out
             xi, xj = X(N["age_mean"]), X(N["jfc_mean"])
             ic.building(cv, xi, y - 110, 180, th.accent, a)
             cv.text((xi, y + 70), "上場した会社の創業者", th.size_note + 4, color=th.accent, alpha=a, anchor="ma")
@@ -284,26 +285,26 @@ def build(N, voice_credit, music_credit=""):
             ic.shop(cv, xj, y - 90, 160, th.compare, b)
             cv.text((xj, y + 70), "新規開業者（公庫の調査）", th.size_note + 4, color=th.compare, alpha=b, anchor="ma")
             cv.text((xj, y + 110), f"平均 {pf(N['jfc_mean'])}歳", th.size_body, bold=True, color=th.compare, alpha=b, anchor="ma")
-            g = ramp(st.t, st.at(1) + 1.8, 0.6)
+            g = ramp(st.t, st.at(1) + 1.8, 0.6) * out
             cv.line([(xi + 30, y - 250), (xj - 30, y - 250)], th.text, 4, g)
             cv.text(((xi + xj) / 2, y - 270), f"約{jfc_gap}歳", th.size_title, bold=True, alpha=g, anchor="md")
-        else:
-            b = ramp(st.t, st.at(2), 0.6)
-            cv.text((M, 220), "20代で起業した人の割合", th.size_body, bold=True, alpha=b)
+        if st.t >= st.at(2) + 0.3:
+            b = ramp(st.t, st.at(2) + 0.3, 0.6)
+            cv.text((W // 2, 200), "20代で起業した人の割合", th.size_body, bold=True, alpha=b, anchor="ma")
             for k, (lab, v, col, ico) in enumerate([("上場した会社の創業者", N["le29_pct"], th.accent, "building"),
                                                      ("新規開業者（公庫の調査）", N["jfc_le29"], th.compare, "shop")]):
                 xg = M + 60 + k * 860
                 ic.icon(cv, ico, xg, 330, 80, col, b)
                 cv.text((xg + 60, 330), lab, th.size_note + 6, color=col, alpha=b, anchor="lm")
                 ic.people_grid(cv, (xg - 40, 400, xg + 700, 780), 100, round(v), 20,
-                               ramp(st.t, st.at(2) + 0.4 * k, 1.0), on=col, alpha=b)
+                               ramp(st.t, st.at(2) + 0.6 + 0.4 * k, 1.0), on=col, alpha=b)
                 cv.text((xg + 330, 790), f"{pf(v)}%", th.size_body + 8, bold=True, color=col, alpha=b, anchor="ma")
-        cv.note("出典：日本政策金融公庫「2025年度新規開業実態調査」。公庫は開業時の年齢（アンケート）、創業者は創業年−生年。1人の形＝1%",
+        cv.note("出典：日本政策金融公庫「2025年度新規開業実態調査」。平均どうしの比較。公庫は開業時の年齢、創業者は創業年−生年。1人の形＝1%",
                 ramp(st.t, st.at(1), 0.6))
 
     compare = Scene("公庫との比較", [
         Line("では、ほかの起業家と比べると、どうでしょうか。"),
-        Line(f"日本政策金融公庫が調べた、新しく開業した人たちと比べると、上場した会社の創業者は、およそ{jfc_gap}歳若く起業していました。"),
+        Line(f"日本政策金融公庫が調べた、新しく開業した人たちと比べると、上場した会社の創業者は、平均で、およそ{jfc_gap}歳若く起業していました。"),
         Line("20代で起業した人の割合も、上場した会社の創業者のほうが、ずっと多くなっています。"),
     ], d_compare, tail=1.8)
 
@@ -352,18 +353,18 @@ def build(N, voice_credit, music_credit=""):
         start = N["age_median"] - N["yb_median"]
         ic.briefcase(cv, X(start), y - 200, 90, th.accent, b)
         cv.rect((X(start), y - 12, X(start) + (X(N["age_median"]) - X(start)) * b, y + 12), th.accent, b)
-        cv.text(((X(start) + X(N["age_median"])) / 2, y - 60), f"働いた期間 約{N['yb_median']:g}年", th.size_note + 6,
+        cv.text(((X(start) + X(N["age_median"])) / 2, y - 60), f"就職から創業 中央値{N['yb_median']:g}年", th.size_note + 6,
                 bold=True, color=th.accent, alpha=b, anchor="ma")
         c = ramp(st.t, st.at(1) + 1.2, 0.6)
         ic.bulb(cv, X(N["age_median"]), y - 160, 130, th.accent, c)
-        cv.text((X(N["age_median"]), y + 60), f"創業 {N['age_median']:g}歳", th.size_body, bold=True, color=th.accent,
+        cv.text((X(N["age_median"]), y + 60), f"創業 中央値{N['age_median']:g}歳", th.size_body, bold=True, color=th.accent,
                 alpha=c, anchor="ma")
         cv.note("創業時年齢と、就職から創業までの年数は、いずれも中央値。就職の年齢はその差から求めた目安。成功の条件ではない",
                 ramp(st.t, st.at(1), 0.6))
 
     conclusion = Scene("結論", [
-        Line("上場した会社の創業者に多かったのは、学生のうちに起業した人でも、長く勤めてから独立した人でもありませんでした。"),
-        Line(f"{N['yb_median']:g}年ほど社会人として働き、30代の前半で、自分の会社を立ち上げた人たちです。"),
+        Line("上場した会社の創業者の中心は、学生のうちに起業した人でも、長く勤めてから独立した人でもありませんでした。"),
+        Line(f"創業時の年齢の中央値は{N['age_median']:g}歳、最初の就職から創業までの年数の中央値は{N['yb_median']:g}年。社会人として一定の経験を積んでから起業した人が、典型的な姿です。"),
         Line("ただし、これは成功の条件ではなく、上場まで届いた人たちの経歴に見られた傾向です。"),
     ], d_conclusion, tail=2.4)
 
@@ -381,8 +382,9 @@ def build(N, voice_credit, music_credit=""):
             (f"音楽：{music_credit}", th.sub),
             ("フォント：BIZ UDPゴシック（SIL Open Font License 1.1）", th.sub),
         ]
+        x0 = (W - max(cv.text_width(s, 30) for s, _ in lines)) / 2
         for k, (s, col) in enumerate(lines):
-            cv.text((M, 220 + k * 76), s, 30, alpha=a, color=col)
+            cv.text((x0, 220 + k * 76), s, 30, alpha=a, color=col)
 
     credits = Scene("出典", [], d_credits, lead=8.0, tail=0.0)
 

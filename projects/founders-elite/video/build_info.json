@@ -1,5 +1,5 @@
 {
- "duration_sec": 395.72,
+ "duration_sec": 401.43,
  "voice": {
   "engine": "VOICEVOX ENGINE",
   "engine_version": "0.25.2",
@@ -57,6 +57,8 @@
   "fade_out": 5.0
  },
  "captions_on_screen": false,
+ "fps": 60,
+ "supersampling": 3,
  "python": "3.12.3",
  "packages": {
   "numpy": "2.5.4",

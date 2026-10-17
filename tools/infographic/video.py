@@ -125,16 +125,49 @@ def caption_at(tl, t):
     return txt if t <= e + 0.8 else ""
 
 
-def frame_at(tl, theme, t, captions=True):
-    i = max(k for k, s in enumerate(tl.scene_starts) if s <= t + 1e-9)
-    sc = tl.scenes[i]
+def _draw_scene(tl, theme, i, local_t):
     st0 = tl.scene_times[i]
-    st = SceneTime(t - tl.scene_starts[i], st0.starts, st0.ends, st0.duration)
     cv = Canvas(theme)
-    sc.draw(cv, st)
+    tl.scenes[i].draw(cv, SceneTime(local_t, st0.starts, st0.ends, st0.duration))
+    return cv
+
+
+TRANSITION = 0.5  # 場面転換のクロスフェード（秒）
+
+
+def frame_at(tl, theme, t, captions=True):
+    """時刻 t のフレーム
+
+    場面の冒頭 TRANSITION 秒の前半は、前の場面の最後の画面を背景色へ薄くする。後半から新しい場面を描く
+    （新しい場面の要素はそれぞれフェードインするため、前後の見出しや図が重なって見えない）
+    """
+    from PIL import Image
+
+    from .canvas import ease
+
+    i = max(k for k, s in enumerate(tl.scene_starts) if s <= t + 1e-9)
+    local = t - tl.scene_starts[i]
+    half = TRANSITION / 2
+    draw_t = local
+    if i > 0 and local < TRANSITION:
+        # 転換の後半は、場面の時刻を 0 から始めて転換の終わりで元の時刻に追いつかせる（出現が途中から始まらない）
+        draw_t = max(0.0, (local - half) * TRANSITION / half)
+    cv = _draw_scene(tl, theme, i, draw_t)
     if captions:
         cv.caption(caption_at(tl, t))
-    return cv.img
+    img = cv.finish()
+    if i > 0 and local < TRANSITION:
+        cache = tl.__dict__.setdefault("_last_frames", {})
+        key = (i - 1, captions)
+        if key not in cache:
+            prev = _draw_scene(tl, theme, i - 1, tl.scene_times[i - 1].duration - 1e-3)
+            if captions:
+                prev.caption(caption_at(tl, tl.scene_starts[i] - 1e-3))
+            cache[key] = prev.finish()
+        if local < half:
+            bg = Image.new("RGB", img.size, theme.bg)
+            img = Image.blend(cache[key], bg, ease(local / half))
+    return img
 
 
 def srt(tl):
