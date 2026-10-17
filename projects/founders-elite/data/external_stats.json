@@ -1,0 +1,16 @@
+{
+  "jfc_2025": {
+    "source": "日本政策金融公庫総合研究所「2025年度新規開業実態調査」",
+    "url": "https://www.jfc.go.jp/n/findings/pdf/kaigyo_251205_1.pdf",
+    "published": "2025-12-05",
+    "accessed": "2026-10-17",
+    "survey": "調査時点2025年8月。日本政策金融公庫国民生活事業が2024年4〜9月に融資した企業のうち、融資時点で開業後1年以内の企業8,517社（不動産賃貸業を除く）。回収2,165社（回収率25.4%）",
+    "values": {
+      "mean_age_at_opening": {"value": 43.9, "unit": "歳", "quote": "2025年度の平均年齢は43.9歳と、調査開始以来最も高くなった"},
+      "age_29_or_under_pct": {"value": 7.0, "unit": "%", "quote": "「29歳以下」は7.0％"},
+      "employees_at_opening_mean": {"value": 2.8, "unit": "人", "quote": "開業時の従業者数 平均2.8人（n=1,994）。従業者数には経営者本人を含む"},
+      "work_experience_pct": {"value": 97.6, "unit": "%", "quote": "「勤務経験」のある割合は97.6％"},
+      "work_experience_years_mean": {"value": 21.1, "unit": "年", "quote": "経験年数の平均は「勤務経験」が21.1年"}
+    }
+  }
+}

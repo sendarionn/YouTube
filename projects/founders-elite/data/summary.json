@@ -30,30 +30,30 @@
     "40〜49歳": 59,
     "50歳以上": 14
   },
-  "student_founder_pct": 5.7,
-  "no_prior_job_pct": 12.4,
+  "student_founder_pct": 6.0,
+  "no_prior_job_pct": 12.6,
   "serial_pct": 19.8,
   "years_before_median": 10.0,
   "years_before_bins": {
     "0年": 3,
-    "1〜4年": 68,
-    "5〜9年": 101,
+    "1〜4年": 72,
+    "5〜9年": 99,
     "10〜14年": 101,
     "15〜19年": 50,
-    "20年以上": 43
+    "20年以上": 41
   },
   "career_categories_pct": {
     "consulting": 14.3,
-    "finance": 16.7,
+    "finance": 16.5,
     "accounting_legal": 1.9,
     "trading": 3.8,
     "net_megaventure": 12.6,
     "foreign_tech": 4.5,
     "jp_large_maker_infra": 14.8,
-    "public_academia": 4.8,
+    "public_academia": 4.3,
     "medical": 1.7
   },
-  "large_org_pct_among_known": 54.9,
+  "large_org_pct_among_known": 54.7,
   "education_levels_all_named": {
     "不明": 387,
     "大学卒業": 41,
@@ -107,7 +107,7 @@
     "大学名あり合計": 66
   },
   "large_org_pct_edu_known": 69.7,
-  "large_org_pct_edu_unknown": 60.5,
+  "large_org_pct_edu_unknown": 60.4,
   "sample_n": 100,
   "sample_education_levels": {
     "不明": 72,

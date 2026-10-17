@@ -22,12 +22,12 @@
    "age_le25_pct": 11.2,
    "age_40plus_pct": 17.4,
    "years_before_median": 10.0,
-   "large_org_pct": 54.9,
+   "large_org_pct": 54.7,
    "consulting_pct": 14.3,
-   "finance_pct": 16.7,
+   "finance_pct": 16.5,
    "net_megaventure_pct": 12.6,
-   "student_founder_pct": 5.7,
-   "no_prior_job_pct": 12.4,
+   "student_founder_pct": 6.0,
+   "no_prior_job_pct": 12.6,
    "serial_pct": 19.8
   },
   "all": {
@@ -37,33 +37,33 @@
    "age_le25_pct": 12.7,
    "age_40plus_pct": 16.6,
    "years_before_median": 10.0,
-   "large_org_pct": 51.9,
+   "large_org_pct": 51.0,
    "consulting_pct": 12.8,
-   "finance_pct": 15.6,
-   "net_megaventure_pct": 11.9,
-   "student_founder_pct": 6.0,
-   "no_prior_job_pct": 13.4,
+   "finance_pct": 14.6,
+   "net_megaventure_pct": 11.7,
+   "student_founder_pct": 7.0,
+   "no_prior_job_pct": 14.6,
    "serial_pct": 18.3
   }
  },
  "years_to_ipo_by_group_target20": {
   "large_org": {
-   "n": 230,
+   "n": 229,
    "years_to_ipo_median": 10.0,
    "age_median": 35.0
   },
   "no_large_org": {
-   "n": 189,
+   "n": 190,
    "years_to_ipo_median": 12.0,
    "age_median": 30.0
   },
   "student": {
-   "n": 24,
+   "n": 25,
    "years_to_ipo_median": 9.0,
    "age_median": 23.0
   },
   "no_prior_job": {
-   "n": 52,
+   "n": 53,
    "years_to_ipo_median": 10.0,
    "age_median": 25.0
   },
@@ -86,9 +86,9 @@
    "age_le25_pct": 8.0,
    "age_40plus_pct": 14.4,
    "years_before_median": 9.0,
-   "large_org_pct": 58.3,
+   "large_org_pct": 57.8,
    "consulting_pct": 16.6,
-   "finance_pct": 19.3,
+   "finance_pct": 18.7,
    "net_megaventure_pct": 11.8,
    "student_founder_pct": 3.7,
    "no_prior_job_pct": 10.2,
@@ -100,13 +100,13 @@
    "age_median": 33.0,
    "age_le25_pct": 13.8,
    "age_40plus_pct": 19.8,
-   "years_before_median": 11.0,
+   "years_before_median": 10.5,
    "large_org_pct": 52.2,
    "consulting_pct": 12.5,
    "finance_pct": 14.7,
    "net_megaventure_pct": 13.4,
-   "student_founder_pct": 7.3,
-   "no_prior_job_pct": 14.2,
+   "student_founder_pct": 7.8,
+   "no_prior_job_pct": 14.7,
    "serial_pct": 21.1
   }
  },

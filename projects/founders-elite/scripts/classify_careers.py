@@ -69,12 +69,15 @@ def classify(row):
         return out
     dates, entries = split_entries(career)
     company_kw = re.compile(r"当社|現当社|現 当社|現・当社")
+    aligned = len(entries) == len(dates)
     pre = []
-    for e in entries:
+    for i, e in enumerate(entries):
         if company_kw.search(e):
             break
+        # 個人事業などが起点の場合、創業年より後の経歴は創業前に含めない
+        if aligned and oy and dates[i][0] > oy:
+            break
         pre.append(e)
-    aligned = len(entries) == len(dates)
     pre_jobs = [e for e in pre if JOIN.search(e) and not FOUND.search(e)]
     pre_found = []
     for i, e in enumerate(pre):
@@ -89,7 +92,13 @@ def classify(row):
     out["first_employer"] = org_of(pre_jobs[0]) if pre_jobs else ""
     out["last_employer"] = org_of(pre_jobs[-1]) if pre_jobs else ""
     out["pre_employers"] = " | ".join(org_of(e) for e in pre_jobs)
-    out["first_job_year"] = dates[0][0] if dates and pre_jobs else None
+    if pre_jobs and aligned:
+        k = pre.index(pre_jobs[0])
+        # 記載が空の行があると、年月と記載が1行ずれている。ずれの始まりの年月を使う
+        empty = [j for j in range(k + 1) if len(pre[j]) < 2]
+        out["first_job_year"] = dates[empty[0] if empty else k][0]
+    else:
+        out["first_job_year"] = dates[0][0] if dates and pre_jobs else None
     out["years_before"] = (oy - out["first_job_year"]) if oy and out["first_job_year"] else None
     out["serial"] = "Y" if pre_found else "N"
     out["student_founder"] = "Y" if (not pre_jobs and not pre_found and out["age_at_founding"] is not None and out["age_at_founding"] <= 25) else "N"
