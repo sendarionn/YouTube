@@ -93,7 +93,7 @@ SRC_P1 = "出典：各社の上場申請書類（Iの部）・有価証券報告
 SRC_JFC = "出典：日本政策金融公庫「2025年度新規開業実態調査」"
 
 
-def build(N):
+def build(N, voice_credit):
     M = 120  # 左右の余白
     W = 1920
 
@@ -113,7 +113,7 @@ def build(N):
         Line("学生のうちに会社を立ち上げ、若くして大成功する。"),
         Line("起業家の成功と聞いて、そんな姿を思い浮かべる人もいるかもしれません。"),
         Line("では、実際に株式の上場まで会社を育てた創業者は、"),
-        Line("何歳で、どんな経歴を経て起業したのでしょうか。", say="なんさいで、どんな経歴を経て起業したのでしょうか。"),
+        Line("何歳で、どんな経歴を経て起業したのでしょうか。"),
     ], d_intro, lead=0.8, tail=1.0)
 
     # 調査対象
@@ -295,7 +295,7 @@ def build(N):
         Line("ここまでを見ると、社会人として経験を積んでから起業する、堅実な姿が浮かびます。"),
         Line("ところが、一般の新規開業者と比べると、別の特徴が見えてきます。"),
         Line(f"日本政策金融公庫の2025年度の調査では、開業した人の平均年齢は{pf(N['jfc_mean'])}歳。"),
-        Line(f"今回の創業者の平均、{pf(N['age_mean'])}歳より、およそ{round(N['jfc_mean'] - N['age_mean'])}歳上です。"),
+        Line(f"今回の創業者の平均、{pf(N['age_mean'])}歳より、およそ{round(N['jfc_mean'] - N['age_mean'])}歳年上です。"),
         Line(f"29歳以下の割合も、公庫の調査では{pf(N['jfc_le29'])}%ですが、今回の創業者では{pf(N['le29_pct'])}%でした。"),
     ], d_compare, tail=1.6)
 
@@ -365,7 +365,7 @@ def build(N):
             "日本政策金融公庫総合研究所「2025年度新規開業実態調査」（2025年12月）",
             "集計方法、定義、調査の限界は概要欄に記載",
             "",
-            "音声：Open JTalk、HTS Voice \"Mei\"（© Nagoya Institute of Technology, CC BY 3.0）",
+            f"音声：{voice_credit}",
             "フォント：BIZ UDPゴシック（SIL Open Font License 1.1）",
         ]
         for k, s in enumerate(lines):

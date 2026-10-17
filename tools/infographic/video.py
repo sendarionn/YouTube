@@ -11,7 +11,7 @@ from typing import Callable
 import numpy as np
 
 from .canvas import Canvas, Theme
-from .tts import SAMPLE_RATE, normalize_peak, speak, write_wav
+from .tts import SAMPLE_RATE, normalize_peak, speak, speak_group, write_wav
 
 
 @dataclass
@@ -55,6 +55,19 @@ class Timeline:
         return len(self.audio) / SAMPLE_RATE
 
 
+def group_lines(lines):
+    """末尾が読点（、）の行は次の行と同じ文として扱い、行番号をまとめる"""
+    groups, cur = [], []
+    for i, ln in enumerate(lines):
+        cur.append(i)
+        if not ln.text.rstrip().endswith("、"):
+            groups.append(cur)
+            cur = []
+    if cur:
+        groups.append(cur)
+    return groups
+
+
 def build_timeline(scenes, backend):
     pieces, cues, starts, sts = [], [], [], []
     cursor = 0.0
@@ -63,13 +76,29 @@ def build_timeline(scenes, backend):
         local = sc.lead
         pieces.append(np.zeros(int(sc.lead * SAMPLE_RATE), np.float32))
         ls, le = [], []
-        for i, ln in enumerate(sc.lines):
-            x = speak(backend, ln.say or ln.text)
-            ls.append(local)
-            le.append(local + len(x) / SAMPLE_RATE)
+        for grp in group_lines(sc.lines):
+            texts = [sc.lines[i].say or sc.lines[i].text for i in grp]
+            r = speak_group(backend, texts)
+            if r is None:
+                # 1文での合成に対応しない場合は行ごとに合成し、行間に gap を入れる
+                parts = []
+                for k, i in enumerate(grp):
+                    x = speak(backend, texts[k])
+                    if k:
+                        parts.append(np.zeros(int(sc.gap * SAMPLE_RATE), np.float32))
+                    off = sum(len(p) for p in parts) / SAMPLE_RATE
+                    parts.append(x)
+                    ls.append(local + off)
+                    le.append(local + off + len(x) / SAMPLE_RATE)
+                x = np.concatenate(parts)
+            else:
+                x, spans = r
+                for a, b in spans:
+                    ls.append(local + a)
+                    le.append(local + b)
             pieces.append(x)
             local += len(x) / SAMPLE_RATE
-            g = sc.gap if i < len(sc.lines) - 1 else sc.tail
+            g = sc.gap if grp[-1] < len(sc.lines) - 1 else sc.tail
             pieces.append(np.zeros(int(g * SAMPLE_RATE), np.float32))
             local += g
         # 端数のずれを防ぐため、場面の長さはサンプル数から決める

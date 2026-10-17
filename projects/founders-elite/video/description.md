@@ -7,14 +7,14 @@
 2016〜2025年に東京証券取引所へ新規上場した会社の創業者474人について、上場申請書類などの役員の経歴から、創業時の年齢と創業前の職歴を調べました。
 
 0:00 導入
-0:19 調べた対象
-1:01 創業したときの年齢
-1:24 学生起業に近い人
-1:44 最初の就職から創業までの年数
-2:05 創業前の勤務先
-2:29 一般の新規開業者との比較
-3:05 二つの調査の違い
-3:26 まとめ
+0:18 調べた対象
+1:00 創業したときの年齢
+1:22 学生起業に近い人
+1:42 最初の就職から創業までの年数
+2:04 創業前の勤務先
+2:27 一般の新規開業者との比較
+3:02 二つの調査の違い
+3:23 まとめ
 
 ■ 主な結果
 ・創業時の年齢：中央値33歳、平均33.6歳（419人）
@@ -50,7 +50,5 @@
 ・日本政策金融公庫総合研究所「2025年度新規開業実態調査」（2025年12月5日） https://www.jfc.go.jp/n/findings/pdf/kaigyo_251205_1.pdf
 
 ■ クレジット
-・音声合成：Open JTalk（https://open-jtalk.sourceforge.net/）
-・音声：HTS Voice "Mei" © 2009-2013 Nagoya Institute of Technology（MMDAgent Project Team、https://www.mmdagent.jp/）
-　Creative Commons Attribution 3.0（https://creativecommons.org/licenses/by/3.0/deed.ja）
+・音声：VOICEVOX:春日部つむぎ
 ・フォント：BIZ UDPゴシック（SIL Open Font License 1.1、https://github.com/googlefonts/morisawa-biz-ud-gothic）

@@ -47,16 +47,19 @@ Python：リポジトリ直下の `.venv/bin/python`
 
 ## 動画「上場した創業者は、何歳で起業したのか」（2026-10-17）
 
-- 完成動画：`output/founders-elite/video/founders_age_career.mp4`（Git管理外、1920×1080、30fps、4分01秒）
+- 完成動画：`output/founders-elite/video/founders_age_career.mp4`（Git管理外、1920×1080、30fps、3分58秒）
 - 台本・構成・概要欄：`video/narration.md`、`video/scene_plan.md`、`video/description.md`、字幕 `video/captions.srt`
 - 共通ツール：リポジトリ直下の `tools/infographic/`（描画、音声合成、書き出し）
 
 再生成
 
-1. リポジトリ直下の `.venv` に `pyopenjtalk-plus` と `imageio-ffmpeg` を入れる
+1. VOICEVOX ENGINE を起動する
+   - `models/voicevox/` に公式リリース（voicevox_engine-macos-arm64-0.25.2.vvpp、SHA-256 1ba77670…）を `ditto -x -k` で展開済み
+   - `models/voicevox/engine_ditto/run --host 127.0.0.1 --port 50021`
+   - リポジトリ直下の `.venv` に `imageio-ffmpeg` と `requests` を入れる
 2. `projects/founders-elite/video/` で `python build.py frames`：確認用の静止画（`output/founders-elite/video/frames/`）
 3. `python build.py render`：MP4、台本、字幕、読みの確認表（`output/founders-elite/video/yomi_check.md`）
 4. テスト：リポジトリ直下で `python -m pytest tools/infographic/tests projects/founders-elite/tests`
 
 - 数値を変えた場合は `scripts/` で再集計してから書き出す。`scenes.py` は集計ファイル間の整合を確認し、合わなければ止まる
-- 音声を差し替える場合は、`tools/infographic/tts.py` に `key()` と `synthesize()` を持つクラスを追加し、`build.py` の `BACKEND` を変える
+- 音声は `build.py` の `BACKEND`（VOICEVOX、春日部つむぎ）。別の音声にする場合は `tools/infographic/tts.py` に `key()` と `synthesize()` を持つクラスを追加して差し替える（Open JTalk 用のクラスも残してある）

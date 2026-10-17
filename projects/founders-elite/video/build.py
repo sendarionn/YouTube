@@ -15,32 +15,39 @@ sys.path.insert(0, str(HERE.parents[2]))
 from scenes import build, load_numbers  # noqa: E402
 from tools.infographic.canvas import Theme  # noqa: E402
 from tools.infographic.config import OUTPUT  # noqa: E402
-from tools.infographic.tts import OpenJTalk  # noqa: E402
-from tools.infographic.video import build_timeline, frame_at, render, srt  # noqa: E402
+from tools.infographic.tts import Voicevox  # noqa: E402
+from tools.infographic.video import build_timeline, frame_at, group_lines, render, srt  # noqa: E402
 
 OUT = OUTPUT / "founders-elite" / "video"
-BACKEND = OpenJTalk(speed=1.1)
+# VOICEVOX ENGINE を起動しておく（既定 http://127.0.0.1:50021、環境変数 VOICEVOX_URL で変更）
+# 春日部つむぎ ノーマル（style id 8）。/speakers で確認済み
+BACKEND = Voicevox(
+    speaker=8, credit_name="春日部つむぎ",
+    speed=1.1, intonation=1.1, pre=0.1, post=0.15,
+    # 読みの修正：(表記, 読み, アクセント核の位置)。アクセントは辞書にない場合のエンジンの推定（語末）に合わせた
+    words=[("東京証券取引所", "トウキョウショウケントリヒキジョ", 13)],
+)
 NAME = "founders_age_career"
 
 
 def timeline():
-    return build_timeline(build(load_numbers()), BACKEND)
+    return build_timeline(build(load_numbers(), BACKEND.credit), BACKEND)
 
 
 def write_script(tl):
-    import pyopenjtalk
-
     def ts(x):
         return f"{int(x // 60)}:{x % 60:04.1f}"
 
     md = ["# 最終ナレーション台本", "", f"尺：{ts(tl.duration)}（{tl.duration:.1f}秒）", "",
           "数値は `video/scenes.py` が集計ファイルから読み込んだ値", ""]
-    yomi = ["# 読みの確認表（Open JTalk の読み）", ""]
+    yomi = [f"# 読みの確認表（{BACKEND.credit} の読み。' はアクセント核、/ はアクセント句、_ は無声化）", ""]
     for sc, s0, st in zip(tl.scenes, tl.scene_starts, tl.scene_times):
         md += [f"## {sc.name}（{ts(s0)}〜{ts(s0 + st.duration)}）", ""]
         for ln, a in zip(sc.lines, st.starts):
             md.append(f"- {ts(s0 + a)} {ln.text}")
-            yomi.append(f"- {ln.text}\n  - {pyopenjtalk.g2p(ln.say or ln.text, kana=True)}")
+        for g in group_lines(sc.lines):
+            text = "".join(sc.lines[i].say or sc.lines[i].text for i in g)
+            yomi.append(f"- {text}\n  - {BACKEND.reading(text)}")
         md.append("")
     (HERE / "narration.md").write_text("\n".join(md), encoding="utf-8")
     OUT.mkdir(parents=True, exist_ok=True)

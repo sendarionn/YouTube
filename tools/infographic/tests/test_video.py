@@ -52,3 +52,40 @@ def test_caption_too_long_raises():
     except ValueError:
         return
     raise AssertionError("3行以上の字幕でエラーにならない")
+
+
+class Marked(Dummy):
+    """1文で合成し、各行の時刻を返すバックエンドのダミー"""
+
+    def key(self):
+        return {"backend": "marked"}
+
+    def synthesize_marked(self, texts):
+        x, sr = self.synthesize("".join(texts))
+        spans, t = [], 0.0
+        for s in texts:
+            d = len(s) * 0.1
+            spans.append((t, t + d - 0.05))
+            t += d
+        return x, sr, spans
+
+
+def test_group_lines():
+    from tools.infographic.video import group_lines
+
+    ls = [Line("あ、"), Line("い。"), Line("う"), Line("え、"), Line("お、")]
+    assert group_lines(ls) == [[0, 1], [2], [3, 4]]
+
+
+def test_grouped_sentence_has_no_gap(tmp_path, monkeypatch):
+    monkeypatch.setattr(tts, "CACHE", tmp_path)
+    sc = [Scene("a", [Line("あいう、"), Line("えおか。"), Line("きく")], lambda cv, st: None, lead=1.0, gap=0.5, tail=1.0)]
+    tl = build_timeline(sc, Marked())
+    st = tl.scene_times[0]
+    # 1文目の2行はつながって合成され、間に gap は入らない
+    assert abs(st.starts[1] - (1.0 + 0.4)) < 0.01
+    # 次の文は gap の後
+    assert abs(st.starts[2] - (1.0 + 0.8 + 0.5)) < 0.01
+    # キャッシュから読んでも同じ
+    tl2 = build_timeline(sc, Marked())
+    assert tl2.scene_times[0].starts == st.starts
