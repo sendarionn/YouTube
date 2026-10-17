@@ -1,0 +1,11 @@
+target,phrase,percent
+superior,お疲れ様（でした）,69.2
+superior,御苦労様（でした）,15.1
+superior,ありがとう（ございました）,11.0
+superior,どうも,0.9
+superior,何も言わない,0.6
+subordinate,お疲れ様（でした）,53.4
+subordinate,御苦労様（でした）,36.1
+subordinate,ありがとう（ございました）,5.0
+subordinate,どうも,2.8
+subordinate,何も言わない,0.5
