@@ -1,0 +1,41 @@
+# 生成物とローカルデータ（AGENTS.md「ファイル管理とGit」参照）
+/output/
+/cache/
+/models/
+/voices/
+
+# 秘密情報
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# 動画と音声
+*.mp4
+*.mov
+*.webm
+*.mkv
+*.wav
+*.mp3
+*.m4a
+*.aac
+*.flac
+
+# 学習済み重み
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+*.onnx
+*.gguf
+
+# projects/ 内の生成画像
+/projects/**/*.png
+/projects/**/*.jpg
+/projects/**/*.jpeg
+/projects/**/*.webp
+/projects/**/*.gif
+
+# OS
+.DS_Store
