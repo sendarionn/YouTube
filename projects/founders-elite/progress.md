@@ -47,7 +47,8 @@ Python：リポジトリ直下の `.venv/bin/python`
 
 ## 動画「上場した創業者は、何歳で起業したのか」（2026-10-17）
 
-- 完成動画：`output/founders-elite/video/founders_age_career.mp4`（Git管理外、1920×1080、30fps、3分58秒）
+- 完成動画：`output/founders-elite/video/founders_age_career.mp4`（Git管理外、1920×1080、30fps、7分59秒。後半に創業者3人の事例の章）
+- 事例の調査：`cases.md`（3人の経歴・起業理由・出典）
 - 台本・構成・概要欄：`video/narration.md`、`video/scene_plan.md`、`video/description.md`、字幕 `video/captions.srt`
 - 共通ツール：リポジトリ直下の `tools/infographic/`（描画、音声合成、書き出し）
 

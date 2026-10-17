@@ -15,6 +15,7 @@ sys.path.insert(0, str(REPO))
 
 from tools.infographic.canvas import hbars, ramp, vbars, waffle  # noqa: E402
 from tools.infographic.video import Line, Scene  # noqa: E402
+from cases_scenes import build_cases, load_cases  # noqa: E402
 
 DATA = PROJECT / "data"
 
@@ -373,4 +374,5 @@ def build(N, voice_credit):
 
     credits = Scene("出典", [], d_credits, lead=8.0, tail=0.0)
 
-    return [intro, scope, age, student, years, employer, compare, caveat, conclusion, credits]
+    cases = build_cases(N, load_cases(DATA))
+    return [intro, scope, age, student, years, employer, compare, caveat, *cases, conclusion, credits]

@@ -195,3 +195,109 @@ def waffle(cv, box, n_on, total=100, cols=10, progress=1.0, on=None, off=None, a
         by = y0 + r * cell
         col = (on or th.accent) if k < lit else (off or th.muted)
         cv.rect((bx + pad, by + pad, bx + cell - pad, by + cell - pad), col, alpha, radius=int(cell * 0.12))
+
+
+def gantt(cv, box, rows, start, end, progress=1.0, label_w=360, size=None, tick_every=2, markers=()):
+    """年表（横棒の期間図）。rows は (ラベル, 開始年, 終了年, 色) のリスト（年は小数可）
+
+    progress は行ごとのリストでもよい。markers は (年, ラベル) を軸の下に示す
+    """
+    th = cv.th
+    x0, y0, x1, y1 = box
+    s = size or th.size_note + 6
+    ax0, ax1 = x0 + label_w, x1
+    span = end - start
+
+    def X(y):
+        return ax0 + (ax1 - ax0) * (y - start) / span
+
+    rh = (y1 - y0 - 70) / max(len(rows), 1)
+    base = y0 + rh * len(rows) + 10
+    cv.line([(ax0, base), (ax1, base)], th.grid, 2)
+    for yr in range(int(start), int(end) + 1):
+        if (yr - int(start)) % tick_every == 0:
+            cv.line([(X(yr), base), (X(yr), base + 10)], th.grid, 2)
+            cv.text((X(yr), base + 16), str(yr), th.size_note - 4, color=th.sub, anchor="ma")
+    for i, (lab, a, b, col) in enumerate(rows):
+        p = progress[i] if isinstance(progress, (list, tuple)) else progress
+        if p <= 0:
+            continue
+        al = min(1.0, p * 2)
+        cy = y0 + rh * (i + 0.5)
+        cv.text((x0, cy), lab, s, alpha=al, anchor="lm")
+        bh = min(rh * 0.5, 40)
+        cv.rect((X(a), cy - bh / 2, X(a) + (X(b) - X(a)) * p, cy + bh / 2), col, al)
+    # 近い位置のラベルは段をずらして重ならないようにする
+    prev_x, level = None, 0
+    for yr, lab, p in markers:
+        x = X(yr)
+        w = cv.text_width(lab, th.size_note, True)
+        level = level + 1 if prev_x is not None and x - prev_x < w + 20 and level == 0 else 0
+        prev_x = x
+        if p <= 0:
+            continue
+        cv.line([(x, y0), (x, base)], th.text, 2, p)
+        cv.text((min(x, ax1 - w / 2), base + 48 + level * 40), lab, th.size_note, bold=True, alpha=p, anchor="ma")
+
+
+def arrow(cv, xy0, xy1, color=None, alpha=1.0, width=4, head=16):
+    """右向きの矢印（水平）"""
+    th = cv.th
+    (a, y), (b, _) = xy0, xy1
+    cv.line([(a, y), (b - head, y)], color or th.sub, width, alpha)
+    if alpha > 0:
+        cv.d.polygon([(b, y), (b - head, y - head * 0.6), (b - head, y + head * 0.6)],
+                     fill=mix(color or th.sub, th.bg, alpha))
+
+
+def flow(cv, box, items, alphas, size=None, head_size=None):
+    """横に並ぶ箱と矢印の流れ図。items は (見出し, 本文) のリスト。本文は箱の幅で折り返す"""
+    th = cv.th
+    x0, y0, x1, y1 = box
+    n = len(items)
+    gap = 70
+    w = (x1 - x0 - gap * (n - 1)) / n
+    s = size or th.size_note + 4
+    hs = head_size or th.size_note + 2
+    for i, ((head, body), a) in enumerate(zip(items, alphas)):
+        if a <= 0:
+            continue
+        bx = x0 + i * (w + gap)
+        cv.rect((bx, y0, bx + w, y1), (255, 255, 255), a, radius=10)
+        cv.text((bx + 24, y0 + 20), head, hs, bold=True, color=th.accent, alpha=a)
+        lines = cv.wrap(body, w - 48, s)
+        if len(lines) * (s + 12) > y1 - y0 - 80:
+            raise ValueError(f"流れ図の本文が箱に収まりません：{body}")
+        for k, ln in enumerate(lines):
+            cv.text((bx + 24, y0 + 30 + hs + 18 + k * (s + 12)), ln, s, alpha=a)
+        if i:
+            arrow(cv, (bx - gap + 12, (y0 + y1) / 2), (bx - 12, (y0 + y1) / 2), alpha=a)
+
+
+def table(cv, box, header, rows, col_w, alphas=None, size=None, row_h=None, head_fill=None):
+    """表。col_w は列幅のリスト。セルは列幅で折り返す。alphas は行ごとの不透明度"""
+    th = cv.th
+    x0, y0, x1, y1 = box
+    s = size or th.size_note + 2
+    lh = s + 10
+    xs = [x0]
+    for w in col_w:
+        xs.append(xs[-1] + w)
+    y = y0
+    hh = lh + 24
+    cv.rect((x0, y, xs[-1], y + hh), head_fill or th.muted)
+    for j, h in enumerate(header):
+        cv.text((xs[j] + 16, y + 12), h, s, bold=True)
+    y += hh
+    for i, row in enumerate(rows):
+        a = alphas[i] if alphas else 1.0
+        cells = [cv.wrap(c, col_w[j] - 32, s, bold=(j == 0)) for j, c in enumerate(row)]
+        h = row_h or (max(len(c) for c in cells) * lh + 24)
+        if a > 0:
+            for j, c in enumerate(cells):
+                for k, ln in enumerate(c):
+                    cv.text((xs[j] + 16, y + 12 + k * lh), ln, s, bold=(j == 0), alpha=a)
+        cv.line([(x0, y + h), (xs[-1], y + h)], th.grid, 2)
+        y += h
+    if y > y1:
+        raise ValueError("表が枠に収まりません")
