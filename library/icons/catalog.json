@@ -1,0 +1,31 @@
+{
+ "note": "再利用するアイコン素材の台帳（AGENTS.md「取得済み素材の管理」）。原本は files/（Git管理外）",
+ "sets": [
+  {
+   "id": "tabler-outline",
+   "name": "Tabler Icons（outline）",
+   "creator": "Paweł Kuna and contributors",
+   "library": "Tabler Icons",
+   "version": "3.48.0",
+   "file": "files/tabler-nodes-outline-3.48.0.json",
+   "download_url": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/tabler-nodes-outline.json",
+   "source_url": "https://tabler.io/icons",
+   "npm": "https://www.npmjs.com/package/@tabler/icons/v/3.48.0",
+   "acquired": "2026-10-18",
+   "sha1": "0c28b1f2d2bd1ff6978dfc0dcb3a03d820d18ec3",
+   "license": "MIT",
+   "license_url": "https://github.com/tabler/tabler-icons/blob/main/LICENSE",
+   "license_file": "files/tabler-icons-LICENSE-3.48.0.txt",
+   "license_file_sha1": "8d0db333c694763efe146cc395f4b4e5498cf4fb",
+   "terms": "商用利用・改変・再配布可。ソフトウェアとして再配布する場合は著作権表示とライセンス文を含める。動画内で描画して使う場合の表示義務はないが、概要欄に任意でクレジットする",
+   "license_checked": "2026-10-18",
+   "commercial_use": true,
+   "youtube_use": true,
+   "credit_required": false,
+   "credit": "Icons: Tabler Icons (MIT License)",
+   "format": "SVGのノード（24×24、線のアイコン）。5,166点",
+   "style": "線画、線幅2、角丸",
+   "used_in": ["business-manners"]
+  }
+ ]
+}

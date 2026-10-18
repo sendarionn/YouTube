@@ -1,0 +1,97 @@
+{
+ "duration_sec": 648.84,
+ "voice": {
+  "engine": "VOICEVOX ENGINE",
+  "engine_version": "0.25.2",
+  "speaker_style_id": 8,
+  "credit": "VOICEVOX:春日部つむぎ",
+  "params": {
+   "speedScale": 1.1,
+   "pitchScale": 0.0,
+   "intonationScale": 1.1,
+   "volumeScale": 1.0,
+   "prePhonemeLength": 0.1,
+   "postPhonemeLength": 0.15,
+   "pauseLengthScale": 1.0,
+   "outputSamplingRate": 48000,
+   "outputStereo": false
+  },
+  "user_dict_words": []
+ },
+ "music": [
+  {
+   "id": "macleod-gymnopedie-1",
+   "title": "Gymnopedie No. 1",
+   "sha1": "a875a337f165f8dbfe3600ba3076b9d186f3c523",
+   "license": "CC BY 3.0"
+  },
+  {
+   "id": "macleod-gymnopedie-2",
+   "title": "Gymnopedie No. 2",
+   "sha1": "2ad7ff5a728cc7a935dd90c3177b12c5eae4784e",
+   "license": "CC BY 3.0"
+  },
+  {
+   "id": "macleod-gymnopedie-3",
+   "title": "Gymnopedie No. 3",
+   "sha1": "7d43b3c8f597ef8611ae8be252b367e2357dfe71",
+   "license": "CC BY 3.0"
+  }
+ ],
+ "icons": {
+  "set": "tabler-outline",
+  "version": "3.48.0",
+  "sha1": "0c28b1f2d2bd1ff6978dfc0dcb3a03d820d18ec3",
+  "used": [
+   "antenna",
+   "arrow-down",
+   "arrow-up",
+   "book",
+   "books",
+   "briefcase",
+   "building-bank",
+   "certificate",
+   "check",
+   "elevator",
+   "id-badge-2",
+   "mood-confused",
+   "news",
+   "notebook",
+   "phone",
+   "plane",
+   "presentation",
+   "question-mark",
+   "quote",
+   "route",
+   "scale",
+   "school",
+   "search",
+   "tool",
+   "user",
+   "user-check",
+   "user-exclamation",
+   "user-question",
+   "users",
+   "world-www",
+   "x"
+  ]
+ },
+ "mix": {
+  "music_db": -13.0,
+  "duck_db": -8.0,
+  "crossfade": 4.0,
+  "fade_in": 2.0,
+  "fade_out": 5.0
+ },
+ "captions_on_screen": false,
+ "fps": 60,
+ "supersampling": 3,
+ "python": "3.12.3",
+ "packages": {
+  "numpy": "2.5.4",
+  "pillow": "13.0.0",
+  "pymupdf": "1.28.2",
+  "imageio-ffmpeg": "0.6.0",
+  "requests": "2.34.2"
+ }
+}
