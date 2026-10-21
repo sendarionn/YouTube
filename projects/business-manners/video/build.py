@@ -4,9 +4,13 @@
   python build.py script   台本（narration.md）、字幕（captions.srt）、読みの確認表を書き出す
   python build.py frames   確認用の静止画を書き出す（各文の開始1.5秒後と場面の最後）
   python build.py render   MP4 を書き出す（ナレーション＋BGM。字幕は焼き込まず captions.srt を別に出す）
+  python build.py export [--only 3,5]
+                           Final Cut Pro 用の一式（final.mp4、project.fcpxml、シーン映像、分離した音声、字幕、manifest.json）
+                           --only で指定したシーン（1始まり）だけ映像を描き直す
 出力先：INFOGRAPHIC_OUTPUT_DIR（既定 output/）/business-manners/video/
 """
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -14,7 +18,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parents[2]))
 
 from scenes import build, load_numbers  # noqa: E402
-from tools.infographic import bgm, svgicons  # noqa: E402
+from tools.infographic import bgm, export, svgicons  # noqa: E402
 from tools.infographic.canvas import SUPERSAMPLING, Theme  # noqa: E402
 from tools.infographic.config import OUTPUT  # noqa: E402
 from tools.infographic.tts import Voicevox  # noqa: E402
@@ -35,15 +39,22 @@ ICON_CREDIT = "アイコン：Tabler Icons（MIT License）"
 MIX = {"music_db": -13.0, "duck_db": -8.0, "crossfade": 4.0, "fade_in": 2.0, "fade_out": 5.0}
 CAPTIONS_ON_SCREEN = False
 FPS = 60
+TITLE = "そのマナー、守る必要ある？ 現代日本のビジネスマナーの起源と妥当性"
+# 使った研究版（AGENTS.md「研究版」）。制作フロー導入前のため承認の記録がない
+RESEARCH_VERSION = "未記録（2026-10-21 の制作フロー導入前）"
+WORKERS = max(1, (os.cpu_count() or 2) // 2)  # export でシーン映像を並列に描くプロセス数
 
 
 def timeline():
     return build_timeline(build(load_numbers(), BACKEND.credit, MUSIC_CREDIT, ICON_CREDIT), BACKEND)
 
 
+def music_bed(tl):
+    return bgm.even(bgm.bed(MUSIC, tl.duration, MIX["crossfade"], MIX["fade_in"], MIX["fade_out"]))
+
+
 def mixed_audio(tl):
-    music = bgm.even(bgm.bed(MUSIC, tl.duration, MIX["crossfade"], MIX["fade_in"], MIX["fade_out"]))
-    return bgm.mix(tl.audio, music, MIX["music_db"], MIX["duck_db"])
+    return bgm.mix(tl.audio, music_bed(tl), MIX["music_db"], MIX["duck_db"])
 
 
 def write_build_info(tl):
@@ -89,6 +100,7 @@ def write_script(tl):
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "yomi_check.md").write_text("\n".join(yomi), encoding="utf-8")
     (HERE / "captions.srt").write_text(srt(tl), encoding="utf-8")
+    (HERE / "shot-list.md").write_text(export.shot_list(tl, FPS, TITLE), encoding="utf-8")
 
 
 def write_frames(tl, theme, only=None):
@@ -119,6 +131,23 @@ def main():
         out = render(tl, theme, OUT / f"{NAME}.mp4", fps=FPS, captions=CAPTIONS_ON_SCREEN, audio=mixed_audio(tl))
         write_build_info(tl)
         print(out)
+    elif cmd == "export":
+        only = None
+        if "--only" in sys.argv:
+            only = {int(x) for x in sys.argv[sys.argv.index("--only") + 1].split(",")}
+        music = bgm.ducked(tl.audio, music_bed(tl), MIX["music_db"], MIX["duck_db"])
+        manifest, problems = export.export(
+            tl, theme, OUT, "business-manners", music=music, fps=FPS, captions=CAPTIONS_ON_SCREEN, only=only,
+            workers=WORKERS, info={"title": TITLE, "research_version": RESEARCH_VERSION,
+                                   "build_info": "projects/business-manners/video/build_info.json"})
+        if only is not None:
+            # 描き直さなかったシーンのアイコンは前回の記録から引き継ぐ
+            prev = json.loads((HERE / "build_info.json").read_text(encoding="utf-8"))["icons"]["used"]
+            svgicons.used.update(("tabler-outline", n) for n in prev)
+        write_build_info(tl)
+        print(OUT / "project.fcpxml")
+        if problems:
+            sys.exit(1)
     print(f"尺 {tl.duration:.1f}秒")
 
 

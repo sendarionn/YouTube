@@ -2,6 +2,16 @@
 
 更新：2026-10-17
 
+## 状態
+
+| 対象 | 状態 | 更新日 |
+| --- | --- | --- |
+| 研究 | 承認の記録なし（2026-10-21 の制作フロー導入前に制作。旧構成のため研究資料は直下） | 2026-10-21 |
+| YouTube | 制作確認待ち（動画は完成、投稿していない） | 2026-10-17 |
+| note | 未着手 | 2026-10-21 |
+
+状態の定義は AGENTS.md「制作状態」。承認を伴う状態はユーザーの指示があった場合だけ変更する
+
 ## 完了
 
 | 段階 | 状態 |
@@ -68,3 +78,11 @@ Python：リポジトリ直下の `.venv/bin/python`
 - 数値を変えた場合は `scripts/` で再集計してから書き出す。`scenes.py` は集計ファイル間の整合を確認し、合わなければ止まる
 - 音声は `build.py` の `BACKEND`（VOICEVOX、春日部つむぎ）。別の音声にする場合は `tools/infographic/tts.py` に `key()` と `synthesize()` を持つクラスを追加して差し替える（Open JTalk 用のクラスも残してある）
 - 再現性の制約：VOICEVOX のバージョンや辞書が変わると、音声と時刻が変わる可能性がある。使った設定は `build_info.json` に記録している
+
+## Final Cut Pro 用の書き出し（2026-10-21 追加）
+
+- `video/` で `python build.py export`：`output/founders-elite/video/` に final.mp4、project.fcpxml、scenes/、audio/、subtitles.srt、manifest.json
+- 一部のシーンだけ直した場合：`python build.py export --only 3,5`
+- 撮影候補：`video/shot-list.md`（`scenes.py` の Shot から生成）
+- 読み込みと別の Mac への移動：`tools/fcpxml/README.md`
+- 従来の `render` の MP4（founders_age_career.mp4）はそのまま残る。export の final.mp4 とは音量の調整方法（固定の倍率）と色の変換（BT.709）が異なる

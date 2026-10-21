@@ -4,6 +4,14 @@
 
 ## 状態
 
+| 対象 | 状態 | 更新日 |
+| --- | --- | --- |
+| 研究 | 承認の記録なし（2026-10-21 の制作フロー導入前に制作。旧構成のため研究資料は直下） | 2026-10-21 |
+| YouTube | 制作確認待ち（動画は完成、投稿していない） | 2026-10-18 |
+| note | 未着手 | 2026-10-21 |
+
+状態の定義は AGENTS.md「制作状態」。承認を伴う状態はユーザーの指示があった場合だけ変更する
+
 動画の本制作まで完了（2026-10-18）。YouTube への投稿はしていない
 
 - 完成動画：`output/business-manners/video/business_manners.mp4`（Git管理外、1920×1080、60fps、10分49秒）
@@ -38,3 +46,11 @@
 
 - 集計の再実行：methodology.md「再集計の手順」
 - 取得済みのPDFとAPI応答：`cache/business-manners/`（Git管理外）
+
+## Final Cut Pro 用の書き出し（2026-10-21 追加）
+
+- `video/` で `python build.py export`：`output/business-manners/video/` に final.mp4、project.fcpxml、scenes/、audio/、subtitles.srt、manifest.json
+- 一部のシーンだけ直した場合：`python build.py export --only 3,5`
+- 撮影候補：`video/shot-list.md`（`scenes.py` の Shot から生成）
+- 読み込みと別の Mac への移動：`tools/fcpxml/README.md`
+- 従来の `render` の MP4（business_manners.mp4）はそのまま残る。export の final.mp4 とは音量の調整方法（固定の倍率）と色の変換（BT.709）が異なる

@@ -19,7 +19,7 @@ sys.path.insert(0, str(REPO))
 
 from tools.infographic import svgicons as si  # noqa: E402
 from tools.infographic.canvas import hbars, mix, ramp  # noqa: E402
-from tools.infographic.video import Line, Scene  # noqa: E402
+from tools.infographic.video import Line, Scene, Shot  # noqa: E402
 
 DATA = PROJECT / "data"
 W, H, M = 1920, 1080, 120
@@ -188,7 +188,11 @@ def build(N, voice_credit, music_credit, icon_credit):
         Line("代わりに使うべきなのは、「承知しました」。"),
         Line("でも、このルールは、昔からあったのでしょうか。"),
         Line("そして、誰が失礼だと決めたのでしょうか。"),
-    ], d_open, lead=0.8, tail=1.4))
+    ], d_open, lead=0.8, tail=1.4, shots=[
+        Shot("スマートフォンで「了解しました」と返信する手元", "冒頭の場面を身近な状況として見せる", line=0, seconds=4,
+             angle="手元の俯瞰。画面の文字が読める程度に寄る",
+             notes="実在の人名・社名・通知が映らないようにする。端末のロゴは映さない", placeholder="返信の吹き出しの図"),
+    ]))
 
     # 三つの問い -----------------------------------------------------------
     def d_three(cv, st):
@@ -539,7 +543,12 @@ def build(N, voice_credit, music_credit, icon_credit):
         Line("調べた本に書かれていないからといって、当時、誰もそう考えていなかったとは言えません。"),
         Line("それでも、本に書かれる「常識」になったのは、ここ十数年のことです。",
              "それでも、本に書かれる、常識、になったのは、ここ十数年のことです。"),
-    ], d_books319, tail=1.8))
+    ], d_books319, tail=1.8, shots=[
+        Shot("敬語・ビジネスメールの本が並ぶ書店や図書館の棚", "研究で調べた本の量を実物で見せる", line=1, seconds=4,
+             angle="棚の正面から横移動。特定の1冊を強調しない",
+             notes="撮影許可を得る。調査対象の319冊そのものと誤解されないよう、ナレーションと重ねる位置に注意する",
+             placeholder="年ごとの冊数の棒グラフ（撮影素材は棒グラフの前に短く挿入する）"),
+    ]))
 
     # 失礼の根拠 -----------------------------------------------------------
     def d_reasons(cv, st):

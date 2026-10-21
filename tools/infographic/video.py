@@ -21,6 +21,20 @@ class Line:
 
 
 @dataclass
+class Shot:
+    """実写・撮影素材の候補。shot-list.md と FCPXML の To Do マーカーになる"""
+
+    subject: str  # 撮影対象
+    purpose: str  # 撮影の目的
+    line: int = 0  # 挿入位置：場面内の何番目の文の開始か
+    seconds: float = 3.0  # 必要な尺
+    angle: str = ""  # 推奨アングル・構図
+    notes: str = ""  # 撮影時の注意点
+    placeholder: str = ""  # 差し替える仮素材（撮影前に表示している図解など）
+    status: str = "未撮影"  # 未撮影／撮影済み／挿入済み
+
+
+@dataclass
 class Scene:
     name: str
     lines: list
@@ -28,6 +42,7 @@ class Scene:
     lead: float = 0.6  # 場面の開始から最初の文までの間
     gap: float = 0.35  # 文と文の間
     tail: float = 1.2  # 最後の文の後、次の場面までの間（数値を読む時間）
+    shots: list = field(default_factory=list)  # 実写の挿入候補（Shot）
 
 
 @dataclass

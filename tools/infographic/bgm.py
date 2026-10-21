@@ -91,8 +91,8 @@ def envelope(x, window=0.05, attack=0.08, release=0.6):
     return np.repeat(env, w)[: len(x)] if len(env) else np.zeros_like(x)
 
 
-def mix(voice, music, music_db=-22.0, duck_db=-8.0):
-    """ナレーションに BGM を重ねる
+def ducked(voice, music, music_db=-22.0, duck_db=-8.0):
+    """ナレーションに合わせて音量を調整した BGM（長さは voice に合わせる）
 
     music_db：BGM のピークをこの値（dBFS）にそろえる。duck_db：ナレーション中にさらに下げる量
     """
@@ -104,7 +104,12 @@ def mix(voice, music, music_db=-22.0, duck_db=-8.0):
     env = envelope(voice)
     env = np.concatenate([env, np.full(len(voice) - len(env), env[-1] if len(env) else 0, np.float32)])
     gain = 10 ** ((duck_db * env) / 20)
-    return (voice + m * gain).astype(np.float32)
+    return (m * gain).astype(np.float32)
+
+
+def mix(voice, music, music_db=-22.0, duck_db=-8.0):
+    """ナレーションに BGM を重ねる（引数は ducked と同じ）"""
+    return (voice + ducked(voice, music, music_db, duck_db)).astype(np.float32)
 
 
 def even(x, window=1.5, ratio=0.5, max_db=6.0):
