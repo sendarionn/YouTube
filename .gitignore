@@ -50,3 +50,7 @@ __pycache__/
 
 # 有料記事の原稿など、公開リポジトリに置かないもの（AGENTS.md「note 記事の制作」）
 /private/
+
+# Final Cut Pro のライブラリとキャッシュ（output/ の FCPXML から作り直せる。Git に入れない）
+*.fcpbundle/
+*.fcpcache/

@@ -93,3 +93,17 @@ Python：リポジトリ直下の `.venv/bin/python`
 - 設定：`note/config.json`（`mode: trial`）、記録：`note/manifest.public.json`
 - 原稿：`private/founders-elite/note/`（Git 管理外）、出力：`output/founders-elite/note/`
 - 再出力：リポジトリ直下で `.venv/bin/python -m tools.note founders-elite all`
+
+## 訂正の記録
+
+### 2026-10-21 学歴が分からなかった人の大手組織の経験割合（60.5% → 60.4%）
+
+- 旧記載：analysis.md「判明しなかった人は60.5%」。concepts.md、recommended_concept.md も同じ
+- 正：60.4%（183 / 303 = 60.396%）。`data/summary.json` の `large_org_pct_edu_unknown` と一致
+- 原因：初職年の抽出誤りを修正したコミット（a2e8dab）で `analyze.py` を再実行し summary.json は 184 / 304 = 60.5% から 60.4% に変わったが、analysis.md のこの値だけ更新されなかった
+  - 分母から外れた1人：（株）INGS の創業者。初職年が創業年より後（years_before = −3）の抽出誤りで、修正後は職歴不明になった
+  - 分子から外れた1人：日本モーゲージサービス（株）の創業者。修正後の分類で大手組織の経験が「なし」になった
+- 集計の定義（分母は学歴が不明で職歴の分類がある人、分子はそのうち大手組織の経験がある人、小数第1位に四捨五入）は修正の前後で同じ
+- analysis.md のほかの割合は、summary.json・breakdowns.json の値、またはそこからの計算（例 101 / 419 = 24.1%）と一致することを確認した
+- 影響：動画はこの値を使っていない。note の試験生成は summary.json から読むため元から60.4%
+- 再発防止：`tests/test_analysis_consistency.py`（analysis.md の主な数値が集計ファイルと一致することの確認）

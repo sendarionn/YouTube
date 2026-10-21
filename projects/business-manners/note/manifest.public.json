@@ -2,7 +2,7 @@
  "title": "「了解しました」はなぜ失礼になったのか：ビジネスマナーの起源をたどる",
  "mode": "trial",
  "research_version": null,
- "research_commit": "e39605176e528fd1d1c277b027c72cbf3acba1a9",
+ "research_commit": "7ea3f117da8b21d85d9ae95352dfb26534751912",
  "research_files": {
   "data/bunka_h17_gokurou.csv": "e9872711983add4a91cd38b55412bfd28884c2f7",
   "data/en2025_survey.csv": "e90438bc6e9e129f7c3cf8253140ce06e08a25d8",
@@ -10,7 +10,7 @@
   "data/ndl_title_counts.csv": "5da6f9f77064626a73aef9ab02ffff837839a37b",
   "data/ryokai_manner_books.csv": "89a26e3fbae6cd2c79b2c67ca5105665d03bcca5",
   "data/ryokai_reasons.csv": "abd33f57b5992da166ac44179abfad3a7f06f891",
-  "hypotheses.md": "a16fa35d920553016058e64ec4100e5dbf702e7f",
+  "hypotheses.md": "aa90842bcf88dc264e96ca5514731a531ee19b82",
   "methodology.md": "8cf9f6acd3f02f528952b5835572a4bee4ad7c2e"
  },
  "config_sha1": "150d1f737a25974df4abe156bdccd215c15a22b5",

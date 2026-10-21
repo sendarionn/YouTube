@@ -1,7 +1,8 @@
-"""題名に「マナー」を含む資料のうち、航空会社・客室乗務員を題名か著者に含むものを数える
+"""題名に「マナー」を含む資料のうち、航空会社・客室乗務員に関する語を題名・著者・出版者に含むものを数える
 
 count_titles.py と同じ検索結果（キャッシュ）を使う
 判定は題名・著者・出版者の文字列に次の語を含むかどうかだけで行う
+「CA」は単語として判定する（CAREER、PONY CANYON などを数えない。progress.md「訂正の記録」）
 著者の経歴（元CAかどうか）は書誌から分からないため数えていない
 
 出力：data/ndl_airline_manner_titles.csv（year, title, creator, publisher, link, matched）
@@ -16,6 +17,11 @@ from paths import DATA
 
 KEYWORDS = ["スチュワーデス", "客室乗務員", "CA", "キャビンアテンダント", "JAL", "ANA", "日本航空", "全日空", "全日本空輸", "エアライン", "航空"]
 TERM = "マナー"
+
+
+def matched_keywords(text):
+    """text に含まれる航空関連の語"""
+    return [k for k in KEYWORDS if (re.search(r"(?<![A-Za-z])CA(?![A-Za-z])", text) if k == "CA" else k in text)]
 
 
 def main():
@@ -39,7 +45,7 @@ def main():
         hit = 0
         for link, (year, r) in seen.items():
             text = " ".join(r.get("title", []) + r.get("creator", []) + r.get("publisher", []))
-            matched = [k for k in KEYWORDS if (re.search(r"(?<![A-Za-z])CA(?![A-Za-z])", text) if k == "CA" else k in text)]
+            matched = matched_keywords(text)
             if matched:
                 hit += 1
                 rows.append({"year": year, "title": r["title"][0], "creator": "; ".join(r.get("creator", [])),

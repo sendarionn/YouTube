@@ -18,7 +18,7 @@ note へのログイン、投稿、価格設定、販売開始はしない
 | --- | --- | --- |
 | `projects/<slug>/note/config.json` | 設定（下記） | 管理する |
 | `projects/<slug>/note/manifest.public.json` | 研究版、研究資料・出力のハッシュ、使った ID、確認結果。本文は含めない | 管理する |
-| `private/<slug>/note/article.md` | 記事の原稿（有料部分を含む）。保存先は `NOTE_PRIVATE_DIR` で変更できる | 除外 |
+| `private/<slug>/note/article.md` | 記事の原稿（有料部分を含む）。保存先は `NOTE_PRIVATE_DIR` で変更できる。直したら `python -m tools.backup create` | 除外 |
 | `private/<slug>/note/report.md` | 詳細レポートの原稿（必要な場合のみ） | 除外 |
 | `output/<slug>/note/` | 出力一式 | 除外 |
 

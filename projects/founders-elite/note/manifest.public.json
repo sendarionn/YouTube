@@ -2,9 +2,9 @@
  "title": "上場した創業者は、何歳で、どんな経歴から起業したのか",
  "mode": "trial",
  "research_version": null,
- "research_commit": "e39605176e528fd1d1c277b027c72cbf3acba1a9",
+ "research_commit": "7ea3f117da8b21d85d9ae95352dfb26534751912",
  "research_files": {
-  "analysis.md": "335a84b34ee329535ea8d77ccd147466fac3fb85",
+  "analysis.md": "1605e75fcb37049d3fa9b2714bae621aa017d1a5",
   "data/breakdowns.json": "71e3bb9849c0a1c507b63313230ef5422c1b1888",
   "data/external_stats.json": "084197942d15332313a5cf708f64df13008c514c",
   "data/summary.json": "184f221409e41c9319f91833ab503e239c411a1b",

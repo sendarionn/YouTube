@@ -61,3 +61,20 @@
 - 設定：`note/config.json`（`mode: trial`）、記録：`note/manifest.public.json`
 - 原稿：`private/business-manners/note/`（Git 管理外）、出力：`output/business-manners/note/`
 - 再出力：リポジトリ直下で `.venv/bin/python -m tools.note business-manners all`
+
+## 訂正の記録
+
+### 2026-10-21 航空会社・CA関連のマナー本の件数（18点 → 16点）
+
+- 旧記載：hypotheses.md、history.md「18点（0.7%）」。video_plan.md、video/claims.md「0.7%」
+- 正：16点（16 / 2,574 = 0.62%、表記は0.6%）。`data/ndl_airline_manner_titles.csv` の16行と一致
+- 確認したこと
+  - `scripts/airline_titles.py` を取得済みの NDL 応答（`cache/business-manners/ndl/`）で再実行すると16行になり、CSV と完全に一致する
+  - 「マナー」の総数2,574点（題名の確認後、1950〜2025年）も `ndl_title_counts.csv` と一致する。ページ送り（500件ずつ）と書誌 URL による重複排除で件数は変わらない
+  - 「CA」を単語の境界なしの部分一致で数え、かつ題名に「マナー」を含むかを確認しない条件では、ちょうど18点になる。増える2件は誤検出
+    - 『LIFE CAREER：人生100年時代の私らしい働き方』（2019、CAREER の CA に一致。題名に「マナー」を含まない）
+    - 映像資料『青春グラフィティ～ねぇお姉さん～』（2008、出版者 PONY CANYON の CA に一致。題名に「マナー」を含まない）
+- 原因（推定）：18点は、現在のスクリプト（CA を単語として判定し、題名を確認する）に直す前の集計結果を文書に書いたものと考えられる。当時の実行記録は残っていないため、条件の再現による推定
+- 取得時点による差ではない（同じ取得済み応答から両方の値を再現できる）
+- 影響：動画は指示によりこの比率を使っていない。note の試験生成も使っていない。配布データ（CSV）は元から16行で、変更なし
+- 再発防止：`tests/test_airline_titles.py`（CA の判定と、文書の件数・割合が CSV と一致することの確認）
