@@ -1,0 +1,151 @@
+{
+ "title": "上場した創業者は、何歳で、どんな経歴から起業したのか",
+ "mode": "trial",
+ "research_version": null,
+ "research_commit": "e39605176e528fd1d1c277b027c72cbf3acba1a9",
+ "research_files": {
+  "analysis.md": "335a84b34ee329535ea8d77ccd147466fac3fb85",
+  "data/breakdowns.json": "71e3bb9849c0a1c507b63313230ef5422c1b1888",
+  "data/external_stats.json": "084197942d15332313a5cf708f64df13008c514c",
+  "data/summary.json": "184f221409e41c9319f91833ab503e239c411a1b",
+  "limitations.md": "8353eedc244e471fd3b3dc690dc95164a2804c88",
+  "methodology.md": "92f652a1184dcd1ef22c4d4dbdf9d0b3500aea95"
+ },
+ "config_sha1": "d973c5e75a6b9da15d415ae01e3b0703a1523ea8",
+ "manuscript_sha1": "d84951ad8071746f03359919ed1a3e7fd6e53259",
+ "outputs": {
+  "article-free.md": {
+   "visibility": "free",
+   "sha1": "4409f4e0b6e4abe868e0208a1108f41df6e1a8d6"
+  },
+  "article-full.md": {
+   "visibility": "paid",
+   "sha1": "c6114706fe0288f70115813b1fc9a7eee4e94921"
+  },
+  "article-paid.md": {
+   "visibility": "paid",
+   "sha1": "4448bd8c056833bfc23e7e1462911cee0d4a0028"
+  },
+  "assets/chart-001.png": {
+   "visibility": "free",
+   "sha1": "11a4605f7ab2e94cc18b71544f89c6fd9d714139"
+  },
+  "assets/chart-002.png": {
+   "visibility": "free",
+   "sha1": "18bf37180eb9dfa6d348a968c87ce339702782f1"
+  },
+  "assets/chart-003.png": {
+   "visibility": "paid",
+   "sha1": "d7e5d3baa217434d5f3b8b3da3c4d7f8eabe9ccc"
+  },
+  "assets/chart-004.png": {
+   "visibility": "paid",
+   "sha1": "458ae7e1ca6c99106a5c82226389712f48d9bd68"
+  },
+  "data/README.md": {
+   "visibility": "paid",
+   "sha1": "70967c84d711fd220ab647f14e7e011dc2ac8670"
+  },
+  "data/distributions.csv": {
+   "visibility": "paid",
+   "sha1": "fa8b4b3b29dc14e7423cec3d62b6a4f57aa54987"
+  },
+  "delivery/founders-research-data.zip": {
+   "visibility": "paid",
+   "sha1": "177579551892424a5d502b39169b5a05c0b839b2"
+  },
+  "report.md": {
+   "visibility": "paid",
+   "sha1": "6d6ff5fe1299f13f5fb6a0ce9daf83d50d4ce35f"
+  },
+  "report.pdf": {
+   "visibility": "paid",
+   "sha1": "77020bf17b7cb205bae6bedf542300a0659d53ea"
+  },
+  "sources.md": {
+   "visibility": "paid",
+   "sha1": "049c588e3b4c0a791a09481bc55c2a9d02016121"
+  }
+ },
+ "claims": {
+  "C01": "free",
+  "C05": "free",
+  "C02": "free",
+  "C04": "free",
+  "C06": "free",
+  "C08": "free",
+  "C03": "paid",
+  "C07": "paid",
+  "C09": "paid"
+ },
+ "numbers": {
+  "listings": "free",
+  "target20": "free",
+  "named": "free",
+  "career_known": "free",
+  "age_median": "free",
+  "age_mean": "free",
+  "student_pct": "free",
+  "no_prior_job_pct": "free",
+  "years_before_median": "free",
+  "age_gap": "free",
+  "jfc_age": "free",
+  "large_org_pct": "paid",
+  "lo_n": "paid",
+  "lo_age": "paid",
+  "lo_years": "paid",
+  "nlo_n": "paid",
+  "nlo_age": "paid",
+  "nlo_years": "paid",
+  "serial_pct": "paid",
+  "serial_n": "paid",
+  "serial_age": "paid",
+  "serial_years": "paid",
+  "first_n": "paid",
+  "first_age": "paid",
+  "first_years": "paid",
+  "le10_large_org": "paid",
+  "le10_serial": "paid",
+  "all_large_org": "paid",
+  "h1_student": "paid",
+  "h2_student": "paid",
+  "h1_large_org": "paid",
+  "h2_large_org": "paid",
+  "edu_known": "paid",
+  "edu_known_pct": "paid",
+  "sample_n": "paid",
+  "sample_known": "paid",
+  "sample_deg_lower": "paid",
+  "univ_named": "paid",
+  "todai": "paid",
+  "waseda_keio": "paid",
+  "large_org_edu_known": "paid",
+  "large_org_edu_unknown": "paid"
+ },
+ "sources": [
+  "J01",
+  "J02"
+ ],
+ "excluded": [
+  {
+   "name": "founders.csv",
+   "reason": "個人の氏名・生年月日・経歴を含むため配布しない。集計値だけを distributions.csv で配布する",
+   "status": "personal"
+  }
+ ],
+ "check": {
+  "研究資料だけを情報源にしている（video/ を参照しない、根拠ファイルが実在する）": true,
+  "原稿の数値・表の注意点がない": true,
+  "無料部分に有料部分の文章が含まれない": true,
+  "確認用原稿に無料・有料の両方と境界がある": true,
+  "有料部分の文章が Git 管理のファイルに含まれない": true,
+  "出力先と原稿の保存先が Git 管理外": true,
+  "記事と図表のファイルがそろっている": true,
+  "データ辞書と CSV の列・欠損値の記載が一致する": true,
+  "ZIP を展開でき、中身が出力と一致する（delivery/founders-research-data.zip）": true,
+  "配布しないデータ・素材が ZIP に含まれない": true,
+  "添付ファイルが1ファイル 50MB 以下": true,
+  "研究版と生成物の対応を記録している": true
+ },
+ "generated": "2026-10-21"
+}

@@ -8,7 +8,7 @@
 | --- | --- | --- |
 | 研究 | 承認の記録なし（2026-10-21 の制作フロー導入前に制作。旧構成のため研究資料は直下） | 2026-10-21 |
 | YouTube | 制作確認待ち（動画は完成、投稿していない） | 2026-10-18 |
-| note | 未着手 | 2026-10-21 |
+| note | 試験生成のみ（研究版の承認がないため本制作ではない。公開・販売しない） | 2026-10-21 |
 
 状態の定義は AGENTS.md「制作状態」。承認を伴う状態はユーザーの指示があった場合だけ変更する
 
@@ -54,3 +54,10 @@
 - 撮影候補：`video/shot-list.md`（`scenes.py` の Shot から生成）
 - 読み込みと別の Mac への移動：`tools/fcpxml/README.md`
 - 従来の `render` の MP4（business_manners.mp4）はそのまま残る。export の final.mp4 とは音量の調整方法（固定の倍率）と色の変換（BT.709）が異なる
+
+## note の試験生成（2026-10-21）
+
+- 第3段階の機能確認のための試験生成。研究版の承認を意味しない
+- 設定：`note/config.json`（`mode: trial`）、記録：`note/manifest.public.json`
+- 原稿：`private/business-manners/note/`（Git 管理外）、出力：`output/business-manners/note/`
+- 再出力：リポジトリ直下で `.venv/bin/python -m tools.note business-manners all`

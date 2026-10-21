@@ -1,0 +1,156 @@
+{
+ "title": "「了解しました」はなぜ失礼になったのか：ビジネスマナーの起源をたどる",
+ "mode": "trial",
+ "research_version": null,
+ "research_commit": "e39605176e528fd1d1c277b027c72cbf3acba1a9",
+ "research_files": {
+  "data/bunka_h17_gokurou.csv": "e9872711983add4a91cd38b55412bfd28884c2f7",
+  "data/en2025_survey.csv": "e90438bc6e9e129f7c3cf8253140ce06e08a25d8",
+  "data/gokurou_dictionaries.csv": "08f38723c74fff9c02a56a1e7e16feb3be60ee9f",
+  "data/ndl_title_counts.csv": "5da6f9f77064626a73aef9ab02ffff837839a37b",
+  "data/ryokai_manner_books.csv": "89a26e3fbae6cd2c79b2c67ca5105665d03bcca5",
+  "data/ryokai_reasons.csv": "abd33f57b5992da166ac44179abfad3a7f06f891",
+  "hypotheses.md": "a16fa35d920553016058e64ec4100e5dbf702e7f",
+  "methodology.md": "8cf9f6acd3f02f528952b5835572a4bee4ad7c2e"
+ },
+ "config_sha1": "150d1f737a25974df4abe156bdccd215c15a22b5",
+ "manuscript_sha1": "b3d22f4e5193017a7edc1266016c9febaeb70f63",
+ "outputs": {
+  "article-free.md": {
+   "visibility": "free",
+   "sha1": "3c890269a00e954c730fcb7c54d40d50665dd899"
+  },
+  "article-full.md": {
+   "visibility": "paid",
+   "sha1": "d95937d603c371e6bb758e4957a552cc2bd29cfb"
+  },
+  "article-paid.md": {
+   "visibility": "paid",
+   "sha1": "cb6f44cd9b0f9e05e52ae3ff96a139281bdb811c"
+  },
+  "assets/chart-001.png": {
+   "visibility": "free",
+   "sha1": "fc20cdd847104b04f956f1efdc86f1c5a6c4b3ce"
+  },
+  "assets/chart-002.png": {
+   "visibility": "free",
+   "sha1": "82d546c530bc56ab506fd28277b543b4e6fd65f6"
+  },
+  "assets/chart-003.png": {
+   "visibility": "paid",
+   "sha1": "42b432dd7844cf625122e67417b07f644ec0820c"
+  },
+  "assets/chart-004.png": {
+   "visibility": "paid",
+   "sha1": "3060252632ce46ab247758f7717901e40a4ff0b7"
+  },
+  "data/README.md": {
+   "visibility": "paid",
+   "sha1": "33f89b062e452b858474cb9ab44f0a0e9e9b3a65"
+  },
+  "data/ndl_airline_manner_titles.csv": {
+   "visibility": "paid",
+   "sha1": "e5bc4b7e45d12d61a2218855fc8dcfb557098a6f"
+  },
+  "data/ndl_title_counts.csv": {
+   "visibility": "paid",
+   "sha1": "8c3701fb01ef359dd76819bdff3c4a1530d51848"
+  },
+  "delivery/business-manners-data.zip": {
+   "visibility": "paid",
+   "sha1": "9fe8389cb04dd5cb2ba2bdc9bad4c13670a68d73"
+  },
+  "sources.md": {
+   "visibility": "paid",
+   "sha1": "6452f96d6109766ebb11068d49be030cb3a49c8d"
+  }
+ },
+ "claims": {
+  "C01": "free",
+  "C02": "free",
+  "C03": "free",
+  "C04": "free",
+  "C05": "free",
+  "C06": "free",
+  "C07": "free",
+  "C09": "free",
+  "C08": "paid",
+  "C10": "paid",
+  "C11": "paid"
+ },
+ "numbers": {
+  "ryokai_total": "free",
+  "ryokai_pre2002": "free",
+  "ryokai_mid_rude": "paid",
+  "ryokai_mid_notrude": "paid",
+  "ryokai_2011_rude": "paid",
+  "ryokai_2011_notrude": "paid",
+  "ryokai_late_rude": "paid",
+  "ryokai_late_notrude": "paid",
+  "reasons_top": "paid",
+  "gokurou_superior": "paid",
+  "otsukare_superior": "paid",
+  "bm_1980s": "paid",
+  "manner_total": "paid",
+  "manner_2008": "paid",
+  "en_need_total": "paid",
+  "en_respect": "paid",
+  "en_smooth": "paid"
+ },
+ "sources": [
+  "S03",
+  "S04",
+  "S06",
+  "S07",
+  "S09",
+  "S10-02",
+  "S10-03",
+  "S10-07",
+  "S10-08",
+  "S13",
+  "S14",
+  "S18"
+ ],
+ "excluded": [
+  {
+   "name": "ryokai_manner_books.csv",
+   "reason": "論文の表の数値。再配布の条件を確認していないため配布しない",
+   "status": "unverified"
+  },
+  {
+   "name": "ryokai_reasons.csv",
+   "reason": "論文の記述の数値。再配布の条件を確認していないため配布しない",
+   "status": "unverified"
+  },
+  {
+   "name": "gokurou_dictionaries.csv",
+   "reason": "論文の表。再配布の条件を確認していないため配布しない",
+   "status": "unverified"
+  },
+  {
+   "name": "bunka_h17_gokurou.csv",
+   "reason": "文化庁サイトの利用規約を確認していないため配布しない",
+   "status": "unverified"
+  },
+  {
+   "name": "en2025_survey.csv",
+   "reason": "民間企業の調査結果。再配布の条件を確認していないため配布しない",
+   "status": "unverified"
+  }
+ ],
+ "check": {
+  "研究資料だけを情報源にしている（video/ を参照しない、根拠ファイルが実在する）": true,
+  "原稿の数値・表の注意点がない": true,
+  "無料部分に有料部分の文章が含まれない": true,
+  "確認用原稿に無料・有料の両方と境界がある": true,
+  "有料部分の文章が Git 管理のファイルに含まれない": true,
+  "出力先と原稿の保存先が Git 管理外": true,
+  "記事と図表のファイルがそろっている": true,
+  "データ辞書と CSV の列・欠損値の記載が一致する": true,
+  "ZIP を展開でき、中身が出力と一致する（delivery/business-manners-data.zip）": true,
+  "配布しないデータ・素材が ZIP に含まれない": true,
+  "添付ファイルが1ファイル 50MB 以下": true,
+  "研究版と生成物の対応を記録している": true
+ },
+ "generated": "2026-10-21"
+}

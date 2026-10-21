@@ -431,24 +431,30 @@ YouTubeのContent IDによる申し立ての可能性についても、確認で
 
 ## note 記事の制作
 
-承認済みの研究版から、YouTube とは独立に作る（Phase 4B）。YouTube の台本から作らない
+承認済みの研究版から、YouTube とは独立に作る（Phase 4B）。YouTube の台本・動画から作らない
+共通ツールは `tools/note/`（使い方は [tools/note/README.md](tools/note/README.md)）。動画の書き出しは実行しない
 
-```text
-projects/<slug>/note/
-  article.md     無料部分と有料部分（境界を明示する）
-  report.md      販売用の詳細レポート（必要な場合のみ）
-  sources.md     記事で使った出典
-  data/          販売用 CSV などの元データ（列と単位の定義を README に書く）
-  assets/        図表の生成コードと仕様（画像は output/<slug>/note/ に出す）
-  manifest.json  使った研究版、配布物の一覧と権利の確認結果
-```
+リポジトリは公開設定のため、有料部分の本文と販売用データは Git に入れない
 
+| 場所 | 内容 | Git |
+| --- | --- | --- |
+| `projects/<slug>/note/config.json` | 研究版、数値・出典・主張・図表・配布データの対応、権利の確認結果 | 管理する |
+| `projects/<slug>/note/manifest.public.json` | 研究版、研究資料と出力のハッシュ、使った主張・数値・出典の ID、自動確認の結果（本文は含めない） | 管理する |
+| `private/<slug>/note/` | 原稿（`article.md`、`report.md`）。有料部分を含む | 除外 |
+| `output/<slug>/note/` | 記事（`article-free/paid/full.md` と貼り付け用 HTML）、図表、詳細レポート、データとデータ辞書、販売用 ZIP、`publication-checklist.md` | 除外 |
+
+- 原稿は一度書いたら保存し、再出力では書き直さない。数値・出典・図表は記法（`{{n:}}` など）で研究資料から引く
+- 原稿は Git 管理外で再生成できないため、`private/` のバックアップを確保する
 - 無料部分：研究の問い、背景、主要な発見、結論、主要な根拠。無料部分だけで中心的な結論が分かるようにする
 - 有料部分・販売資料：調査方法と分析手順、個別事例の詳細、統計分析・追加検証、図表・比較データ、再利用できるデータ、反証と調査上の限界、追加の考察
-- 無料公開・有料公開・非公開は研究成果に応じてユーザーが選ぶ。すべてのテーマに有料コンテンツを作る必要はない
-- 販売用の PDF・CSV などは必要なものだけ作る
+- 無料公開・有料公開・非公開と価格はユーザーが決める。すべてのテーマに有料コンテンツを作る必要はない
+- 販売用の PDF・CSV などは必要なものだけ作る。意味のないファイルを形式的に作らない
+- 配布データは権利を確認できたものだけ含め、確認できないものは出典のリンクだけ残す。元の研究資料が公開されている場合は独占性を前提にせず、整理・検証・解説・再利用のしやすさを価値とする
+- CSV には各列の意味・単位・定義・欠損値の扱いを書く
 - 出典、図表の説明、研究上の制約を記事に含める
 - 動画と記事で、数値と定義を一致させる
+- 本制作（`mode: production`）は `progress.md` に承認済みの研究版がある場合だけ実行できる。承認前の試験生成（`mode: trial`）は研究の承認とみなさない
+- 原稿の境界の記号は note の有料ラインに自動では変換されない。有料ラインは note の画面で設定する（手順は `publication-checklist.md`）
 
 ## 公開
 
@@ -525,8 +531,9 @@ GitHubは、制作システム、制作ルール、企画、調査結果、台�
 | --- | --- | --- |
 | `projects/` | 調査指示書、研究資料、出典情報、台本、構成案、記事、メタデータ | 管理する |
 | `templates/` | 新しいプロジェクトの雛形（`brief.md`、`progress.md`） | 管理する |
-| `tools/` | 共通ツール（`infographic/` 描画・音声・書き出し、`fcpxml/` Final Cut Pro 用データ） | 管理する |
-| `output/` | 完成動画、シーン映像、分離した音声、合成音声、生成画像、サムネイル、記事の図表 | 除外 |
+| `private/` | 公開リポジトリに置けない原稿（note の有料部分を含む原稿など）。別途バックアップする | 除外 |
+| `tools/` | 共通ツール（`infographic/` 描画・音声・書き出し、`fcpxml/` Final Cut Pro 用データ、`note/` note 記事と販売資料） | 管理する |
+| `output/` | 完成動画、シーン映像、分離した音声、合成音声、生成画像、サムネイル、note の記事・図表・販売資料 | 除外 |
 | `cache/` | 再生成可能な一時データ、ダウンロードした外部素材 | 除外 |
 | `models/` | ローカルAIモデル、学習済み重み | 除外 |
 | `voices/` | 自分の声の録音、音声学習データ、音声モデル | 除外 |
@@ -543,7 +550,7 @@ projects/<slug>/
   research/       研究資料（SSoT。「研究資料（SSoT）」）
   video/          YouTube 動画：video_plan.md、narration.md、storyboard.md、claims.md、scenes.py、build.py、
                   captions.srt、description.md、shot-list.md、thumbnail.md
-  note/           note 記事（「note 記事の制作」）
+  note/           note 記事の設定と公開用の記録（config.json、manifest.public.json。「note 記事の制作」）
 ```
 
 - 2026-10-21 より前に作った `business-manners`、`founders-elite` は研究資料が直下にある旧構成のまま扱う。スクリプトのパスと再生成手順を壊さないため移動しない
