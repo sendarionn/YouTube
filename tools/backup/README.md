@@ -1,7 +1,7 @@
 # tools/backup
 
-Git 管理外の非公開原稿（`private/`。note の有料部分を含む原稿など）をバックアップし、復元を確認する
-`private/` の下に追加したファイルは、自動的に対象になる
+Git 管理外の非公開原稿（`private/`。note の有料部分を含む原稿など）と録音原本（`voices/`）をバックアップし、復元を確認する
+それぞれのディレクトリの下に追加したファイルは、自動的に対象になる
 
 ## 設定
 
@@ -21,6 +21,7 @@ PRIVATE_BACKUP_DIR=~/Backups/YouTube-private
 
 ```sh
 .venv/bin/python -m tools.backup create     # private/ を日時つきの tar.gz に保存し、元のファイルと照合する
+.venv/bin/python -m tools.backup create voices   # voices/（録音原本）を同じ方法で保存する
 .venv/bin/python -m tools.backup list       # バックアップの一覧と、それぞれの検証結果
 .venv/bin/python -m tools.backup verify <バックアップ先>/private-YYYYmmdd-HHMMSS.tar.gz
 ```

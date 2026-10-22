@@ -1,10 +1,10 @@
-"""Git 管理外の非公開原稿（private/）のバックアップと復元
+"""Git 管理外の非公開の原本（private/ の原稿、voices/ の録音）のバックアップと復元
 
 バックアップ先はリポジトリの外に置く。パスはコードにも公開リポジトリにも書かず、環境変数 PRIVATE_BACKUP_DIR か、
 リポジトリ直下の .env（Git 管理外）の PRIVATE_BACKUP_DIR= で指定する
 外付けストレージや暗号化したボリューム（macOS の暗号化ディスクイメージなど）を指定できる。暗号化はこのツールでは行わない
 
-- 1回のバックアップは日時つきの tar.gz（private-YYYYmmdd-HHMMSS.tar.gz）と、各ファイルの SHA-256 を記録した .json
+- 1回のバックアップは日時つきの tar.gz（<元のディレクトリ名>-YYYYmmdd-HHMMSS.tar.gz）と、各ファイルの SHA-256 を記録した .json
 - 過去のバックアップは削除・上書きしない（誤操作で消した原稿を前の日時から戻せる）
 - 保存後に、書き出した tar.gz を読み直して元のファイルと一致するか確認する
 - 復元は空のディレクトリにだけ行い、作業中の private/ を上書きしない
@@ -20,6 +20,7 @@ from pathlib import Path
 from tools.infographic.config import REPO
 
 SOURCE = REPO / "private"
+SOURCES = {"private": REPO / "private", "voices": REPO / "voices"}  # バックアップできる元の場所
 
 
 class BackupError(Exception):
@@ -65,17 +66,18 @@ def create(source=SOURCE, dest=None, now=None):
     dest.mkdir(parents=True, exist_ok=True)
     os.chmod(dest, 0o700)  # 非公開原稿のため所有者だけが読めるようにする
     stamp = (now or datetime.now()).strftime("%Y%m%d-%H%M%S")
-    archive = dest / f"private-{stamp}.tar.gz"
+    name = source.name
+    archive = dest / f"{name}-{stamp}.tar.gz"
     if archive.exists():
         raise BackupError(f"同じ名前のバックアップがある：{archive}")
-    record = {"created": stamp, "source": "private/", "files": {}}
+    record = {"created": stamp, "source": f"{name}/", "files": {}}
     tmp = archive.with_suffix(".part")
     with tarfile.open(tmp, "w:gz") as tar:
         for p in files:
             data = p.read_bytes()
             rel = p.relative_to(source).as_posix()
             record["files"][rel] = {"sha256": _sha256(data), "bytes": len(data)}
-            info = tarfile.TarInfo(f"private/{rel}")
+            info = tarfile.TarInfo(f"{name}/{rel}")
             info.size = len(data)
             info.mtime = int(p.stat().st_mtime)
             info.mode = 0o600
@@ -120,13 +122,13 @@ def verify(archive, source=None):
     return problems
 
 
-def snapshots(dest=None):
+def snapshots(dest=None, name=None):
     dest = Path(dest) if dest else backup_dir()
-    return sorted(dest.glob("private-*.tar.gz"))
+    return sorted(p for n in ([name] if name else SOURCES) for p in dest.glob(f"{n}-*.tar.gz"))
 
 
 def restore(archive, target):
-    """空のディレクトリ target に private/ を復元し、記録と照合する"""
+    """空のディレクトリ target に復元し、記録と照合する"""
     archive, target = Path(archive), Path(target)
     if target.exists() and any(target.iterdir()):
         raise BackupError(f"復元先が空ではない（上書きしない）：{target}")

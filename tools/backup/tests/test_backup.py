@@ -76,3 +76,15 @@ def test_destination_is_not_hardcoded(monkeypatch):
         backup.backup_dir()
     monkeypatch.setenv("PRIVATE_BACKUP_DIR", "~/somewhere")
     assert backup.backup_dir() == Path("~/somewhere").expanduser()
+
+
+def test_voices_source_uses_its_own_name(tmp_path):
+    src = tmp_path / "voices"
+    (src / "me" / "raw").mkdir(parents=True)
+    (src / "me" / "raw" / "take01.wav").write_bytes(b"RIFF....WAVE")
+    dest = tmp_path / "backup"
+    archive, _ = backup.create(src, dest, now=datetime(2026, 10, 22, 9, 0, 0))
+    assert archive.name == "voices-20261022-090000.tar.gz"
+    assert backup.snapshots(dest, "voices") == [archive] and backup.snapshots(dest, "private") == []
+    files = backup.restore(archive, tmp_path / "r")
+    assert files == ["me/raw/take01.wav"]

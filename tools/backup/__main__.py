@@ -1,21 +1,21 @@
 """使い方（リポジトリ直下で実行。バックアップ先は PRIVATE_BACKUP_DIR）
 
-  .venv/bin/python -m tools.backup create                 private/ をバックアップし、検証する
+  .venv/bin/python -m tools.backup create [private|voices]  private/（既定）または voices/ をバックアップし、検証する
   .venv/bin/python -m tools.backup list                   バックアップの一覧と検証結果
   .venv/bin/python -m tools.backup verify <tar.gz>        1つのバックアップを検証する
   .venv/bin/python -m tools.backup restore <tar.gz> <空のディレクトリ>
-                                                          指定した空のディレクトリに復元する（private/ は上書きしない）
+                                                          指定した空のディレクトリに復元する（作業中のファイルは上書きしない）
 """
 import sys
 
-from . import BackupError, create, restore, snapshots, verify
+from . import SOURCES, BackupError, create, restore, snapshots, verify
 
 
 def main():
     args = sys.argv[1:]
     try:
-        if args[:1] == ["create"]:
-            archive, rec = create()
+        if args[:1] == ["create"] and len(args) <= 2 and (len(args) == 1 or args[1] in SOURCES):
+            archive, rec = create(SOURCES[args[1] if len(args) == 2 else "private"])
             print(f"{archive}（{len(rec['files'])} ファイル、検証済み）")
         elif args[:1] == ["list"]:
             for a in snapshots():
