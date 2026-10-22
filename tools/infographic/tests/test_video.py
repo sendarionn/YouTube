@@ -106,3 +106,13 @@ def test_supersampled_canvas_outputs_target_size():
     cv2.d.ellipse((100.3, 100.3, 300.3, 300.3), fill=(0, 0, 0))
     edge = [cv2.finish().getpixel((x, 130))[0] for x in range(100, 140)]  # 曲線の部分
     assert any(0 < v < 240 for v in edge)
+
+
+def test_normalize_numbers_ja():
+    from tools.infographic.tts import normalize_numbers_ja as n
+
+    assert n("回答者は1,435人で、そのうち74%") == "回答者は1435人で、そのうち74パーセント"
+    assert n("平均値は33.6歳") == "平均値は33点ロク歳"
+    assert n("0.62％") == "レイ点ロクニパーセント"
+    assert n("1,234,567円") == "1234567円"
+    assert n("2008年に99点") == "2008年に99点"

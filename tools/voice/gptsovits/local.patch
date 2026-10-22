@@ -1,0 +1,55 @@
+diff --git a/GPT_SoVITS/AR/data/data_module.py b/GPT_SoVITS/AR/data/data_module.py
+index f360503..283924b 100644
+--- a/GPT_SoVITS/AR/data/data_module.py
++++ b/GPT_SoVITS/AR/data/data_module.py
+@@ -55,9 +55,7 @@ class Text2SemanticDataModule(LightningDataModule):
+             batch_size=batch_size,
+             sampler=sampler,
+             collate_fn=self._train_dataset.collate,
+-            num_workers=self.num_workers,
+-            persistent_workers=True,
+-            prefetch_factor=16,
++            **self._worker_args(self.num_workers),
+         )
+ 
+     def val_dataloader(self):
+@@ -66,11 +64,14 @@ class Text2SemanticDataModule(LightningDataModule):
+             batch_size=1,
+             shuffle=False,
+             collate_fn=self._train_dataset.collate,
+-            num_workers=max(self.num_workers, 12),
+-            persistent_workers=True,
+-            prefetch_factor=16,
++            **self._worker_args(max(self.num_workers, 12) if self.num_workers > 0 else 0),
+         )
+ 
++    @staticmethod
++    def _worker_args(n):
++        # worker を 0 にした場合は persistent_workers と prefetch_factor を渡さない（ローカルの変更）
++        return {"num_workers": n, "persistent_workers": True, "prefetch_factor": 16} if n > 0 else {"num_workers": 0}
++
+     # 这个会使用到嘛？
+     def test_dataloader(self):
+         return DataLoader(
+diff --git a/GPT_SoVITS/s2_train.py b/GPT_SoVITS/s2_train.py
+index 58998c7..55e0e3a 100644
+--- a/GPT_SoVITS/s2_train.py
++++ b/GPT_SoVITS/s2_train.py
+@@ -132,13 +132,13 @@ def _run(rank, n_gpus, hps, use_ddp):
+     collate_fn = TextAudioSpeakerCollate(version=hps.model.version)
+     train_loader = DataLoader(
+         train_dataset,
+-        num_workers=4,
+         shuffle=False,
+-        pin_memory=True,
++        pin_memory=torch.cuda.is_available(),
+         collate_fn=collate_fn,
+         batch_sampler=train_sampler,
+-        persistent_workers=True,
+-        prefetch_factor=2,
++        # macOS では worker の起動で止まることがあるため、環境変数で 0 にできるようにする（ローカルの変更）
++        **({"num_workers": int(os.environ.get("NUM_WORKERS", 4)), "persistent_workers": True, "prefetch_factor": 2}
++           if int(os.environ.get("NUM_WORKERS", 4)) > 0 else {"num_workers": 0}),
+     )
+     # if rank == 0:
+     #     eval_dataset = TextAudioSpeakerLoader(hps.data.validation_files, hps.data, val=True)

@@ -48,6 +48,48 @@
   .venv/bin/python -m tools.backup create voices
   ```
 
+## GPT-SoVITS（ローカル）
+
+外部に送信せず、この Mac だけで学習・合成する。`models/gpt-sovits/`（Git 管理外）に置き、再現に必要なものは `tools/voice/gptsovits/` に残す
+
+| ファイル | 内容 |
+| --- | --- |
+| `gptsovits/COMMIT` | 使った GPT-SoVITS のコミット |
+| `gptsovits/local.patch` | ローカルの変更（macOS でデータ読み込みの worker が止まるため、0 にできるようにした） |
+| `gptsovits/requirements-lock.txt` | 導入したパッケージの版 |
+| `gptsovits/prepare.sh`、`gptsovits/train.py` | 前処理と追加学習（WebUI と同じ設定を CPU で実行） |
+| `gptsovits/self.yaml` | API サーバーの設定 |
+
+### 導入（初回だけ）
+
+1. `git clone https://github.com/RVC-Boss/GPT-SoVITS.git models/gpt-sovits` し、`git checkout $(cat tools/voice/gptsovits/COMMIT)`、`git apply tools/voice/gptsovits/local.patch`
+2. `models/gpt-sovits` で Python 3.12 の venv を作り、`pip install -r <リポジトリ>/tools/voice/gptsovits/requirements-lock.txt`（conda を使う install.sh は使わない）
+3. 事前学習済みモデル（約5GB）を Hugging Face（XXXXRT/GPT-SoVITS-Pretrained の pretrained_models.zip、G2PWModel.zip、nltk_data.zip、open_jtalk_dic_utf_8-1.11.tar.gz）から取得し、install.sh と同じ場所に展開する
+4. `local/` に `prepare.sh`、`train.py`、`self.yaml` を置く
+
+### 学習
+
+```sh
+.venv/bin/python -m tools.voice.dataset voices/self/raw/<録音> voices/self/dataset/wav   # 無音で区切る
+# 書き起こしを録音原稿と照合し、voices/self/dataset/train.list を作る（言い直しの区間は除く）
+models/gpt-sovits/local/prepare.sh <リポジトリ>/voices/self/dataset/train.list
+(cd models/gpt-sovits && .venv/bin/python local/train.py all 8 15)
+```
+
+- 約85秒の録音で、CPU で約35分
+- GPT（韻律）まで追加学習すると、少ない録音では文の一部を飛ばした。SoVITS（声質）だけ追加学習し、GPT は事前学習のものを使う組み合わせ（hybrid）が最もよかった
+
+### 合成と評価
+
+```sh
+(cd models/gpt-sovits && .venv/bin/python api_v2.py -a 127.0.0.1 -p 9880 -c local/self.yaml)   # サーバー
+.venv/bin/python -m tools.voice.evaluate hybrid zeroshot voicevox                          # 評価用の文章を生成
+models/gpt-sovits/.venv/bin/python -m tools.voice.asr_check voices/self/eval/hybrid             # 読み間違いの候補
+```
+
+- `voices/self/eval/index.html` をブラウザで開いて聴き比べ、`voices/self/evaluation.md` に評価を書く
+- 合成は `tools/infographic/tts.py` の `GptSovits`（サーバーの HTTP API を呼ぶ）。数字の書き方は `normalize_numbers_ja` で読み上げやすい形にする
+
 ## 次の段階（承認後）
 
 - 録音の確認が終わったら、試作する方式をユーザーが決める（`method-comparison.md`「進め方」）

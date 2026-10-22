@@ -115,6 +115,118 @@ def speak_group(backend, texts):
     return x, spans
 
 
+_DIGIT_KANA = dict(zip("0123456789", ["レイ", "イチ", "ニ", "サン", "ヨン", "ゴ", "ロク", "ナナ", "ハチ", "キュウ"]))
+
+
+def normalize_numbers_ja(text):
+    """数字の書き方を、読み上げで誤りにくい形にする（GPT-SoVITS の日本語の前処理は、桁区切り・小数点・% を読まないため）
+
+    1,435 → 1435、33.6 → 33点ロク、0.62 → レイ点ロクニ、74% → 74パーセント
+    """
+    import re
+
+    while re.search(r"(\d),(\d{3})(?!\d)", text):
+        text = re.sub(r"(\d),(\d{3})(?!\d)", r"\1\2", text)
+
+    def dec(m):
+        whole = "レイ" if m.group(1) == "0" else m.group(1)
+        return whole + "点" + "".join(_DIGIT_KANA[d] for d in m.group(2))
+
+    text = re.sub(r"(\d+)\.(\d+)", dec, text)
+    return re.sub(r"[%％]", "パーセント", text)
+
+
+def _file_sha1(path, _memo={}):
+    """大きなモデルファイルもあるため、同じパス・更新時刻・大きさなら計算を省く"""
+    import os
+
+    st = os.stat(path)
+    k = (str(path), st.st_mtime_ns, st.st_size)
+    if k not in _memo:
+        h = hashlib.sha1()
+        with open(path, "rb") as f:
+            for chunk in iter(lambda: f.read(1 << 20), b""):
+                h.update(chunk)
+        _memo[k] = h.hexdigest()
+    return _memo[k]
+
+
+class GptSovits:
+    """GPT-SoVITS（ローカルで起動した api_v2.py の HTTP API）。ユーザー自身の声
+
+    参照音声（ref_audio）とその書き起こし（prompt_text）、重み（gpt_weights、sovits_weights）で声を指定する
+    サーバーが読み込んでいる重みに頼らず、最初の合成の前に必ず読み込ませる（キャッシュの識別と実際の声を一致させるため）
+    キャッシュの識別には、参照音声と重みのハッシュ、生成の設定を含める
+    """
+
+    def __init__(self, ref_audio, prompt_text, gpt_weights, sovits_weights, url=None, label="self",
+                 speed=1.0, seed=1234, top_k=15, top_p=1.0, temperature=1.0, repetition_penalty=1.35,
+                 text_split_method="cut5", fragment_interval=0.3, credit_name=None, retries=3, normalize=True):
+        import os
+
+        self.url = (url or os.environ.get("GPTSOVITS_URL", "http://127.0.0.1:9880")).rstrip("/")
+        self.ref_audio = str(ref_audio)
+        self.prompt_text = prompt_text
+        self.gpt_weights = str(gpt_weights)
+        self.sovits_weights = str(sovits_weights)
+        self.label = label
+        self.params = {"speed_factor": speed, "seed": seed, "top_k": top_k, "top_p": top_p, "temperature": temperature,
+                       "repetition_penalty": repetition_penalty, "text_split_method": text_split_method,
+                       "fragment_interval": fragment_interval, "batch_size": 1, "parallel_infer": False}
+        self.credit = credit_name or "音声合成：GPT-SoVITS（話者本人の声で学習）"
+        self.retries = retries
+        self.normalize = normalize  # 数字の書き方の正規化（normalize_numbers_ja）
+        self._weights_ready = False
+
+    def key(self):
+        return {"backend": "gpt-sovits", "label": self.label, "ref_audio_sha1": _file_sha1(self.ref_audio),
+                "prompt_text": self.prompt_text,
+                "gpt_weights_sha1": _file_sha1(self.gpt_weights), "sovits_weights_sha1": _file_sha1(self.sovits_weights),
+                "normalize": self.normalize, **self.params}
+
+    def _request(self, method, path, **kw):
+        import time
+
+        import requests
+
+        for attempt in range(self.retries):
+            try:
+                r = requests.request(method, f"{self.url}{path}", timeout=600, **kw)
+                if r.status_code == 200:
+                    return r
+                raise RuntimeError(f"GPT-SoVITS {path} が失敗しました（{r.status_code}）：{r.text[:300]}")
+            except requests.ConnectionError:
+                if attempt == self.retries - 1:
+                    raise RuntimeError(f"GPT-SoVITS のサーバーに接続できません（{self.url}）。api_v2.py を起動してください")
+                time.sleep(2 * (attempt + 1))
+
+    def ensure_weights(self):
+        if self._weights_ready:
+            return
+        self._request("GET", "/set_gpt_weights", params={"weights_path": self.gpt_weights})
+        self._request("GET", "/set_sovits_weights", params={"weights_path": self.sovits_weights})
+        self._weights_ready = True
+
+    def synthesize(self, text):
+        import io
+
+        self.ensure_weights()
+        if self.normalize:
+            text = normalize_numbers_ja(text)
+        body = {"text": text, "text_lang": "ja", "ref_audio_path": self.ref_audio, "prompt_text": self.prompt_text,
+                "prompt_lang": "ja", "media_type": "wav", "streaming_mode": False, **self.params}
+        r = self._request("POST", "/tts", json=body)
+        with wave.open(io.BytesIO(r.content)) as w:
+            sr = w.getframerate()
+            x = np.frombuffer(w.readframes(w.getnframes()), dtype=np.int16).astype(np.float32) / 32768
+        return x, sr
+
+    def info(self):
+        """build_info.json に記録する内容"""
+        return {"engine": "GPT-SoVITS (api_v2)", **self.key(), "ref_audio": self.ref_audio,
+                "gpt_weights": self.gpt_weights, "sovits_weights": self.sovits_weights}
+
+
 class Voicevox:
     """VOICEVOX ENGINE（HTTP API）。起動中のエンジンに接続する
 
