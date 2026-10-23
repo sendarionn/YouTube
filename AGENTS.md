@@ -313,8 +313,10 @@ YouTubeに公開した完成版は、必要に応じてGitリポジトリとは�
 
 ## 音声合成
 
-- 標準のナレーションは、ユーザー自身の録音を基にした合成音声とする。導入が完了するまでは VOICEVOX「春日部つむぎ」を使い、導入後も代替として維持する
-  - VOICEVOX を使った動画は概要欄に「VOICEVOX:春日部つむぎ」と記載する
+- 標準のナレーションは、ユーザー自身の録音を基にした合成音声（`self`、2026-10-23 承認、GPT-SoVITS）とする。VOICEVOX「春日部つむぎ」（`voicevox`）は代替として維持する
+  - 声は `tools/infographic/voices.py` の `narration()` で選ぶ（定義は `tools/voice/voices.json`、環境変数 `NARRATION_VOICE` で切り替え）
+  - 承認前に完成した動画（business-manners、founders-elite）は、再現性のため VOICEVOX のまま再生成する。声を変える場合は新しい版として作る
+  - VOICEVOX を使った動画は概要欄に「VOICEVOX:春日部つむぎ」と記載する。本人の声の合成音声を使った動画は、概要欄に合成音声である旨を書き、YouTube の改変・合成コンテンツの開示が必要かを投稿時に確認する
 - 音声エンジンは共通の形（`tools/infographic/tts.py` の `synthesize(text)`）で差し替えられるようにし、エンジン固有の処理は各バックエンドに閉じる
 - 自分の声は、外部サービス（ElevenLabs など）とローカルの方式（GPT-SoVITS など）を同じ録音で試作し、聴き比べて選ぶ。比較と手順は [tools/voice/](tools/voice/README.md)
 - 録音原稿と評価用の文章はエージェントが用意し、評価用の文章は録音に含めない。録音はユーザーが行い、`tools.voice.check_recording` で品質を確認する

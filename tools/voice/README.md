@@ -90,6 +90,12 @@ models/gpt-sovits/.venv/bin/python -m tools.voice.asr_check voices/self/eval/hyb
 - `voices/self/eval/index.html` をブラウザで開いて聴き比べ、`voices/self/evaluation.md` に評価を書く
 - 合成は `tools/infographic/tts.py` の `GptSovits`（サーバーの HTTP API を呼ぶ）。数字の書き方は `normalize_numbers_ja` で読み上げやすい形にする
 
+## 標準の声（2026-10-23 承認）
+
+- `self`（hybrid）を標準にした。定義は `voices.json`、承認の記録は `voices/self/evaluation.md`
+- 動画の `build.py` で `tools.infographic.voices.narration()` を使うと、標準の声になる。`NARRATION_VOICE=voicevox` で VOICEVOX に切り替わる
+- 本人の声を使うときは、GPT-SoVITS のサーバー（`api_v2.py`）を起動しておく。参照音声と重みのハッシュが承認時と違う場合は止まる
+
 ## 次の段階（承認後）
 
 - 録音の確認が終わったら、試作する方式をユーザーが決める（`method-comparison.md`「進め方」）

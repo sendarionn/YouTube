@@ -29,11 +29,11 @@ REF_TEXT = "この数字を見て、多くの人がそのくらいもらって�
 def voices():
     """評価する方式（名前 → (説明, バックエンドを作る関数)）"""
     return {
-        "zeroshot": ("GPT-SoVITS v2ProPlus（学習なし、参照音声だけ）", lambda: GptSovits(
+        "zeroshot": ("学習なし（録音の一部を見本にするだけ）", lambda: GptSovits(
             REF, REF_TEXT, gpt_weights=GPTSOVITS / "GPT_SoVITS/pretrained_models/s1v3.ckpt",
             sovits_weights=GPTSOVITS / "GPT_SoVITS/pretrained_models/v2Pro/s2Gv2ProPlus.pth", label="zeroshot")),
-        "finetuned": ("GPT-SoVITS v2ProPlus（録音で追加学習）", lambda: finetuned()),
-        "hybrid": ("GPT-SoVITS v2ProPlus（SoVITS だけ追加学習、GPT は事前学習のまま）", lambda: finetuned(base_gpt=True)),
+        "finetuned": ("声質と話し方の両方を学習", lambda: finetuned()),
+        "hybrid": ("声質だけ学習、話し方は学習前のモデル（推奨候補）", lambda: finetuned(base_gpt=True)),
         "voicevox": ("VOICEVOX 春日部つむぎ（現在の標準）", lambda: Voicevox(
             speaker=8, credit_name="春日部つむぎ", speed=1.1, intonation=1.1, pre=0.1, post=0.15)),
     }
@@ -79,14 +79,15 @@ def generate(name, backend):
 
 def page():
     """聴き比べのページ（ローカルのファイルを参照する。公開しない）"""
-    names = [n for n in voices() if (OUT / n).exists()]
+    order = ["hybrid", "zeroshot", "finetuned", "voicevox"]
+    names = [n for n in order if (OUT / n).exists()]
     desc = {n: voices()[n][0] for n in names}
     rows = []
     for sid, text in sentences():
         cells = "".join(f'<td><audio controls preload="none" src="{n}/{sid}.wav"></audio></td>'
                         if (OUT / n / f"{sid}.wav").exists() else "<td>－</td>" for n in names)
         rows.append(f"<tr><th>{sid}</th><td class=t>{html.escape(text)}</td>{cells}</tr>")
-    head = "".join(f"<th>{html.escape(desc[n])}</th>" for n in names)
+    head = "".join(f"<th>{html.escape(n)}<br><small>{html.escape(desc[n])}</small></th>" for n in names)
     ref = Path("..") / "dataset" / "wav" / REF.name
     doc = f"""<!doctype html><html lang="ja"><meta charset="utf-8"><title>声の聴き比べ</title>
 <style>body{{font-family:sans-serif;margin:16px}} table{{border-collapse:collapse}} td,th{{border:1px solid #ccc;padding:6px;vertical-align:top}}

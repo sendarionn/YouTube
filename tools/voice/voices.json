@@ -1,0 +1,29 @@
+{
+ "default": "self",
+ "voices": {
+  "self": {
+   "engine": "gpt-sovits",
+   "description": "ユーザー本人の声（GPT-SoVITS v2ProPlus。SoVITS だけ録音で追加学習し、GPT は事前学習のまま）",
+   "approved": "2026-10-23",
+   "approval_note": "聴き比べ（voices/self/eval）の後、ユーザーが hybrid の採用を指示",
+   "label": "hybrid",
+   "ref_audio": "voices/self/dataset/wav/clip-003.wav",
+   "ref_audio_sha1": "452a8e78a7641689f43127cd6e6b171c45cffe09",
+   "prompt_text": "この数字を見て、多くの人がそのくらいもらっている、と考えるのは自然なことです。",
+   "gpt_weights": "models/gpt-sovits/GPT_SoVITS/pretrained_models/s1v3.ckpt",
+   "gpt_weights_sha1": "0a82c197a2107ccd20c8d24e7f89da750f7e42ba",
+   "sovits_weights": "voices/self/model/self_e8_s192.pth",
+   "sovits_weights_sha1": "c61dbd7ffc70552d709eb5cbf7af862e80dafd1f",
+   "params": {"speed": 1.0, "seed": 1234, "top_k": 15, "top_p": 1.0, "temperature": 1.0,
+              "repetition_penalty": 1.35, "text_split_method": "cut5", "fragment_interval": 0.3},
+   "credit": "音声合成：GPT-SoVITS（制作者本人の声で学習）"
+  },
+  "voicevox": {
+   "engine": "voicevox",
+   "description": "VOICEVOX 春日部つむぎ（代替。2026-10-22 までの標準）",
+   "speaker": 8,
+   "credit_name": "春日部つむぎ",
+   "params": {"speed": 1.1, "intonation": 1.1, "pre": 0.1, "post": 0.15}
+  }
+ }
+}
