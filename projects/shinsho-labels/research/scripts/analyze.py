@@ -12,6 +12,12 @@
 - 実質価格：消費者物価指数（総合、2020年=100、e-Stat）で 2020年の円に直す
 - ページ当たり価格：本体価格 ÷ 本文のページ数
 - 翻訳：責任表示に「訳」を含む
+- 対象：横断比較は区分（一般・科学・ジュニアなど）で絞らず、期間内に1点以上あるすべてのシリーズ。
+  compared（MIN_TITLES 以上）は統計量を安定させるための目印で、比較への参加条件ではない
+- 刊行年数：期間内に1点以上を刊行した年の数。年平均点数 = 点数 ÷ 刊行年数（創刊・終刊の時期の違いをならす）
+- 特化：分野ごとの構成比を、全シリーズを合わせた構成比で割った値（特化係数。1 より大きいほどその分野に偏る）と、
+  その分野の年平均点数の両方を出す（構成比が高いことと、点数が多いことを区別する）
+- 綱：NDC の上2桁（例：21 日本史、49 医学）。第1次区分より細かい分野の違いを見る
 """
 import csv
 import math
@@ -123,9 +129,14 @@ def main():
             if r["year"] in idx:
                 real.append(p * 100 / idx[r["year"]])
         pages = [int(r["pages"]) for r in rs if r["pages"]]
+        active = len({r["year"] for r in rs})
+        allrs = [r for r in rows if r["label"] == l]
         feats = [title_features(r["title"]) for r in rs]
         summary.append({
             "label": l, "category": cat, "titles": len(rs), "compared": int(len(rs) >= MIN_TITLES),
+            "first_year": min(r["year"] for r in allrs), "last_year": max(r["year"] for r in allrs),
+            "status": "current" if max(r["year"] for r in allrs) >= 2024 else "ended",
+            "active_years": active, "titles_per_year": round(len(rs) / active, 1),
             "ndc_known_share": round(n_nd / len(rs), 3), "ndc_hhi": round(hhi, 3) if hhi is not None else "",
             "top_ndc": max(shares, key=shares.get) if shares else "",
             "top_ndc_share": round(max(shares.values()), 3) if shares else "",
@@ -149,6 +160,25 @@ def main():
                              "share": round(shares.get(c, 0), 4) if shares else ""})
     write("summary_labels.csv", summary)
     write("ndc_by_label.csv", ndc_rows)
+
+    # 分野への特化：構成比（特化係数）と点数（年平均）の両方。基準は期間内の全シリーズを合わせた構成比
+    active = {s["label"]: s["active_years"] for s in summary}
+    for level, key, name in (("class", lambda r: r["ndc_class"], "ndc_specialization.csv"),
+                             ("division", lambda r: r["ndc"][:2] if len(r["ndc"]) >= 2 else "", "ndc2_specialization.csv")):
+        nd = Counter(key(r) for r in cross if key(r))
+        tot = sum(nd.values())
+        out = []
+        for l in labels:
+            c = Counter(key(r) for r in cross if r["label"] == l and key(r))
+            n = sum(c.values())
+            if not n:
+                continue
+            for k in sorted(nd):
+                share = c.get(k, 0) / n
+                out.append({"label": l, level: k, "titles": c.get(k, 0), "share": round(share, 4),
+                            "all_share": round(nd[k] / tot, 4), "lq": round(share / (nd[k] / tot), 2),
+                            "titles_per_year": round(c.get(k, 0) / active[l], 2)})
+        write(name, out)
 
     # 分野の時代変化（10年ごと）
     dec = defaultdict(Counter)

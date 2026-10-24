@@ -20,7 +20,13 @@ DATA = HERE.parent / "data"
 
 
 def digits(isbn):
-    return re.sub(r"[^0-9X]", "", isbn or "")
+    """ISBN を13桁にそろえる（古い本の書誌は10桁の ISBN のことがある。例：物語ウクライナの歴史 2002年）"""
+    d = re.sub(r"[^0-9X]", "", (isbn or "").upper())
+    if len(d) == 10:
+        core = "978" + d[:9]
+        check = (10 - sum(int(c) * (1 if i % 2 == 0 else 3) for i, c in enumerate(core)) % 10) % 10
+        d = core + str(check)
+    return d
 
 
 def main():

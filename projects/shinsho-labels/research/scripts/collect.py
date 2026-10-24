@@ -4,6 +4,8 @@
 - 1回の検索で取れるのは500件まで（tools/research/ndl.py）。10年ごとに検索し、500件を超える10年は
   年・月・日に分けて検索する
 - 書誌のシリーズ名が series_pattern に合うものだけを残し、NDL書誌ID で重複を除く
+- publisher_pattern がある候補は、出版者もそれに合う書誌だけを残す（同じ名前の別の出版社のシリーズを分ける。
+  例：教育社の「歴史新書」と洋泉社の「歴史新書」「歴史新書y」）
 - 出力：cache/shinsho-labels/raw/<シリーズ名>.jsonl（取得した書誌、Git 管理外）、data/collect_log.csv（区間ごとの件数）
 - 応答は cache/ndl/ に保存され、再実行ではそれを使う（--offline で API に問い合わせない）
 """
@@ -26,14 +28,19 @@ FIRST, LAST = 1930, 2026
 
 def collect(c, offline=False):
     pat = re.compile(c["series_pattern"])
-    params = {"dpid": "iss-ndl-opac", "title": c["query"]}
+    pub = re.compile(c["publisher_pattern"]) if c.get("publisher_pattern") else None
     seen, log = {}, []
     # 10年ごとに検索し、500件を超える10年は年（さらに月・日）に分ける（ndl.search_by_date）
+    # 検索語は「|」で区切って複数にできる（表記の違い。例：ヨベル新書|YOBEL新書）
     for d in range(FIRST, LAST + 1, 10):
-        items, lg = ndl.search_by_date(params, d, min(d + 9, LAST), offline=offline)
+        items, lg = [], []
+        for q in c["query"].split("|"):
+            it, l = ndl.search_by_date({"dpid": "iss-ndl-opac", "title": q}, d, min(d + 9, LAST), offline=offline)
+            items += it
+            lg += l
         kept = 0
         for r in items:
-            if any(pat.search(s) for s in r["series"]):
+            if any(pat.search(s) for s in r["series"]) and (not pub or any(pub.search(p) for p in r["publisher"])):
                 bid = (r["ids"].get("NDLBibID") or [r["link"]])[0]
                 if bid not in seen:
                     seen[bid] = r

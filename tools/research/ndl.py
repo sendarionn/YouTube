@@ -14,6 +14,7 @@ import xml.etree.ElementTree as ET
 from tools.infographic.config import CACHE
 
 API = "https://ndlsearch.ndl.go.jp/api/opensearch"
+SRU = "https://ndlsearch.ndl.go.jp/api/sru"
 CACHE_DIR = CACHE / "ndl"
 INTERVAL = 3.0  # 問い合わせの間隔（秒）
 NS = {"dc": "http://purl.org/dc/elements/1.1/", "dcndl": "http://ndl.go.jp/dcndl/terms/",
@@ -36,9 +37,11 @@ def cache_path(params):
     return CACHE_DIR / (hashlib.sha1(query.encode()).hexdigest()[:16] + ".xml"), query
 
 
-def fetch(params, offline=False):
+def fetch(params, offline=False, api=API):
     """検索結果の XML（ルート要素）。offline=True ではキャッシュだけを使い、なければ例外"""
-    path, query = cache_path(params)
+    path, query = cache_path(params if api == API else {**params, "_api": "sru"})
+    if api != API:
+        query = urllib.parse.urlencode(sorted(params.items()))
     if not path.exists():
         if offline:
             raise FileNotFoundError(f"キャッシュにない：{query}")
@@ -48,7 +51,7 @@ def fetch(params, offline=False):
             if wait > 0:
                 time.sleep(wait)
             try:
-                with urllib.request.urlopen(f"{API}?{query}", timeout=120, context=CTX) as r:
+                with urllib.request.urlopen(f"{api}?{query}", timeout=120, context=CTX) as r:
                     body = r.read()
                 _last[0] = time.time()
                 break
@@ -158,3 +161,16 @@ def search_by_date(params, year_from, year_to, offline=False):
             log.append({"from": str(y), "until": str(y), "records": len(out) - before,
                         "shortfall": max(0, n_year - (len(out) - before))})
     return out, log
+
+
+def sru_extents(cql, n=50, offline=False):
+    """SRU（DC-NDL 形式）で検索し、各書誌の (シリーズ名, 大きさの記述) を返す。OpenSearch の応答には大きさ（cm）がない"""
+    root = fetch({"operation": "searchRetrieve", "version": "1.2", "recordSchema": "dcndl", "recordPacking": "xml",
+                  "maximumRecords": str(n), "query": cql}, offline=offline, api=SRU)
+    out = []
+    for rec in root.iter("{http://www.loc.gov/zing/srw/}recordData"):
+        series = [" ".join(t.strip() for t in e.itertext() if t.strip())
+                  for e in rec.iter("{http://ndl.go.jp/dcndl/terms/}seriesTitle")]
+        ext = [(e.text or "").strip() for e in rec.iter("{http://purl.org/dc/terms/}extent")]
+        out.append((series, ext))
+    return out

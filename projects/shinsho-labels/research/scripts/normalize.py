@@ -4,7 +4,8 @@
 出力：data/titles.csv（1行1点）、data/normalize_report.csv（規則ごとの件数）
 
 規則（methodology.md「刊行点数の数え方」）
-1. 紙の図書だけを残す：カテゴリが「マイクロ」だけ・「デジタル」だけの書誌は、同じ本の複製として除く
+1. 紙の図書を優先する：カテゴリが「マイクロ」だけ・「デジタル」だけの書誌は、同じ番号か同じ題名・著者の紙の書誌が
+   あれば複製として除く。紙の書誌がない場合は残す（戦中・戦後すぐの本は国立国会図書館にマイクロ資料しかないことがある）
 2. 同じシリーズ・同じ番号の書誌は1点にまとめる（重版・刷の書誌）
 3. 番号のない書誌は、正規化した題名・最初の著者・版の表示が同じものを1点にまとめる（新版・改訂版は別の点）。番号のある書誌と同じ題名・著者で
    同じ時期（era）なら、その番号の点に含める（時期が違えば別の版として数える）
@@ -45,6 +46,8 @@ ERAS = {
     "岩波新書": lambda y, s: iwanami_era(y, s),
     "角川新書": lambda y, s: "角川新書（2014年〜）" if y and y >= 2014 else "角川新書（旧・1950年代〜）",
     "河出新書": lambda y, s: "河出新書（2018年〜）" if y and y >= 2018 else "河出新書（旧・1950年代〜）",
+    # 番号のない2000年以降の「青春新書」は INTELLIGENCE・PLAY BOOKS と区別できないため除く
+    "青春新書（旧）": lambda y, s: None if y and y >= 2000 else "青春新書（旧）",
 }
 
 
@@ -149,16 +152,27 @@ def normalize(label, category, records, report):
     groups = {}  # key -> list of records
     by_title = {}
     numbered, unnumbered = [], []
+    def tkey(r):
+        return (norm_title(r["title"][0] if r["title"] else ""), creators(r)[0])
+
+    paper_nos = {series_number(r["series"][0])[1] for r in records if paper(r) and r["series"]} - {None}
+    paper_titles = {tkey(r) for r in records if paper(r)}
     for r in records:
         if not paper(r):
-            report[(label, "除外：マイクロ・デジタルだけの書誌")] += 1
-            continue
+            no = series_number(r["series"][0])[1] if r["series"] else None
+            if (no and no in paper_nos) or tkey(r) in paper_titles:
+                report[(label, "除外：マイクロ・デジタルの書誌（同じ本の紙の書誌がある）")] += 1
+                continue
+            report[(label, "残す：マイクロ・デジタルだけの書誌（紙の書誌がない）")] += 1
         s = r["series"][0] if r["series"] else ""
         pre, no = series_number(s)
         (numbered if no else unnumbered).append((r, pre, no))
     for r, pre, no in numbered:
         y, _ = year_month(r)
         era = pat_era(y, r["series"][0])
+        if era is None:
+            report[(label, "除外：時期の対象外（ERAS）")] += 1
+            continue
         key = (era, pre or "", no)
         groups.setdefault(key, []).append(r)
         name, _ = creators(r)
@@ -168,6 +182,9 @@ def normalize(label, category, records, report):
         tkey = (norm_title(r["title"][0] if r["title"] else ""), name, edition_key(r))
         y, _ = year_month(r)
         era = pat_era(y, r["series"][0] if r["series"] else "")
+        if era is None:
+            report[(label, "除外：時期の対象外（ERAS）")] += 1
+            continue
         # 同じ題名・著者でも、時期が違えば別の版（例：青版の本の新赤版での改版）として別に数える
         if tkey in by_title and by_title[tkey][0] == era:
             groups[by_title[tkey]].append(r)
@@ -209,6 +226,9 @@ def main():
     report, out = Counter(), []
     for path in sorted(RAW.glob("*.jsonl")):
         label = path.stem
+        # 候補から外したシリーズ（判型などで除外。raw は残っている）は数えない
+        if label not in cands or cands[label].get("decision") == "除外":
+            continue
         recs = [json.loads(l) for l in path.open(encoding="utf-8")]
         out += normalize(label, cands[label]["category"], recs, report)
     out.sort(key=lambda r: (r["label"], r["era"], r["year"] or 0, r["series_no"]))
