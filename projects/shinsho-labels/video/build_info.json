@@ -1,0 +1,72 @@
+{
+ "duration_sec": 493.87,
+ "research_version": "research-v1（2026-10-25 承認。コミット 2e8e818 ＋ 表現の修正。progress.md「研究版」）",
+ "voice": {
+  "engine": "GPT-SoVITS (api_v2)",
+  "backend": "gpt-sovits",
+  "label": "hybrid",
+  "ref_audio_sha1": "452a8e78a7641689f43127cd6e6b171c45cffe09",
+  "prompt_text": "この数字を見て、多くの人がそのくらいもらっている、と考えるのは自然なことです。",
+  "gpt_weights_sha1": "0a82c197a2107ccd20c8d24e7f89da750f7e42ba",
+  "sovits_weights_sha1": "c61dbd7ffc70552d709eb5cbf7af862e80dafd1f",
+  "normalize": true,
+  "speed_factor": 1.0,
+  "seed": 1234,
+  "top_k": 15,
+  "top_p": 1.0,
+  "temperature": 1.0,
+  "repetition_penalty": 1.35,
+  "text_split_method": "cut5",
+  "fragment_interval": 0.3,
+  "batch_size": 1,
+  "parallel_infer": false,
+  "ref_audio": "voices/self/dataset/wav/clip-003.wav",
+  "gpt_weights": "models/gpt-sovits/GPT_SoVITS/pretrained_models/s1v3.ckpt",
+  "sovits_weights": "voices/self/model/self_e8_s192.pth"
+ },
+ "voice_credit": "音声合成：GPT-SoVITS（制作者本人の声で学習）",
+ "music": [
+  {
+   "id": "macleod-gymnopedie-1",
+   "title": "Gymnopedie No. 1",
+   "sha1": "a875a337f165f8dbfe3600ba3076b9d186f3c523",
+   "license": "CC BY 3.0"
+  },
+  {
+   "id": "macleod-gymnopedie-2",
+   "title": "Gymnopedie No. 2",
+   "sha1": "2ad7ff5a728cc7a935dd90c3177b12c5eae4784e",
+   "license": "CC BY 3.0"
+  },
+  {
+   "id": "macleod-gymnopedie-3",
+   "title": "Gymnopedie No. 3",
+   "sha1": "7d43b3c8f597ef8611ae8be252b367e2357dfe71",
+   "license": "CC BY 3.0"
+  }
+ ],
+ "mix": {
+  "music_db": -6.0,
+  "duck_db": -10.0,
+  "crossfade": 4.0,
+  "fade_in": 2.0,
+  "fade_out": 5.0
+ },
+ "captions_on_screen": false,
+ "fps": 60,
+ "supersampling": 3,
+ "map_layout_distortion": {
+  "stress1": 0.209,
+  "spearman": 0.933,
+  "nearest_kept": 0.388,
+  "n_labels": 67,
+  "n_pairs": 2211
+ },
+ "python": "3.12.3",
+ "packages": {
+  "numpy": "2.5.4",
+  "pillow": "13.0.0",
+  "imageio-ffmpeg": "0.6.0",
+  "requests": "2.34.2"
+ }
+}
