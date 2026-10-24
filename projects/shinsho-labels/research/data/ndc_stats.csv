@@ -1,0 +1,6 @@
+metric,value
+labels,29
+titles_with_ndc,10283
+cramers_v,0.129
+hhi_median,0.214
+jsd_median,0.22
