@@ -50,11 +50,13 @@ def url_path(src):
     return Path(unquote(urlparse(src).path))
 
 
-def build(name, scenes, audio, fps=60, width=1920, height=1080, sample_rate=48000):
+def build(name, scenes, audio, fps=60, width=1920, height=1080, sample_rate=48000, captions=None, caption_lang="ja"):
     """FCPXML の文字列を返す
 
     scenes：SceneClip の列（タイムラインの順）
     audio：{"narration": パス, "bgm": パス, "effects": パス}。各音声は動画全体と同じ長さで、モノラル
+    captions：(開始フレーム, 終了フレーム, 文) の列（タイムラインの時刻）。指定すると、開始を含むシーンのクリップに
+              字幕クリップ（SRT 形式のロール）として接続する。シーンを動かすと字幕も一緒に動く
     """
     if sample_rate % fps:
         raise ValueError("サンプリングレートがフレームレートで割り切れない（音声の区切りがフレームに合わない）")
@@ -87,6 +89,16 @@ def build(name, scenes, audio, fps=60, width=1920, height=1080, sample_rate=4800
     seq = ET.SubElement(project, "sequence", format="r0", duration=rt(total, fps), tcStart="0s", tcFormat="NDF",
                         audioLayout="stereo", audioRate=f"{sample_rate // 1000}k")
     spine = ET.SubElement(seq, "spine")
+    starts = []
+    acc = 0
+    for s in scenes:
+        starts.append(acc)
+        acc += s.frames
+    by_scene = {}
+    for a, b, text in captions or []:
+        k = max(i for i, p in enumerate(starts) if p <= a)
+        by_scene.setdefault(k, []).append((a - starts[k], b - a, text))
+    n_style = 0
     pos = 0
     for k, s in enumerate(scenes):
         clip = ET.SubElement(spine, "asset-clip", ref=ids[s.id], offset=rt(pos, fps), name=f"{s.id} {s.name}",
@@ -102,6 +114,15 @@ def build(name, scenes, audio, fps=60, width=1920, height=1080, sample_rate=4800
                     ET.SubElement(clip, "asset-clip", ref=ids[kind], lane=str(LANES[kind]), offset="0s",
                                   name=Path(audio[kind]).stem, start="0s", duration=rt(total, fps),
                                   audioRole=ROLES[kind])
+        for off, dur, text in by_scene.get(k, []):
+            n_style += 1
+            cap = ET.SubElement(clip, "caption", lane="1", offset=rt(off, fps), name=text[:40], start="0s",
+                                duration=rt(max(1, dur), fps), role=f"SRT?captionFormat=SRT.{caption_lang}")
+            t = ET.SubElement(cap, "text", placement="bottom")
+            ET.SubElement(t, "text-style", ref=f"cap{n_style}").text = text
+            d = ET.SubElement(cap, "text-style-def", id=f"cap{n_style}")
+            ET.SubElement(d, "text-style", font=".SF NS Text", fontSize="13", fontFace="Regular",
+                          fontColor="1 1 1 1", backgroundColor="0 0 0 1")
         for m in s.markers:
             attrs = {"start": rt(m.frame, fps), "duration": rt(1, fps), "value": m.value}
             if m.todo:

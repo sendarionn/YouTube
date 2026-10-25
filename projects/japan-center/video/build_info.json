@@ -1,0 +1,51 @@
+{
+ "duration_sec": 509.16,
+ "research_version": "research-v1（2026-10-25。コミット f573f01 ＋ 追加検証。progress.md「研究版」）",
+ "voice": {
+  "engine": "Voicevox",
+  "version": "0.25.2",
+  "speaker": 8
+ },
+ "voice_name": "voicevox",
+ "voice_credit": "VOICEVOX:春日部つむぎ",
+ "music": [
+  {
+   "id": "macleod-gymnopedie-1",
+   "title": "Gymnopedie No. 1",
+   "sha1": "a875a337f165f8dbfe3600ba3076b9d186f3c523",
+   "license": "CC BY 3.0"
+  },
+  {
+   "id": "macleod-gymnopedie-2",
+   "title": "Gymnopedie No. 2",
+   "sha1": "2ad7ff5a728cc7a935dd90c3177b12c5eae4784e",
+   "license": "CC BY 3.0"
+  },
+  {
+   "id": "macleod-gymnopedie-3",
+   "title": "Gymnopedie No. 3",
+   "sha1": "7d43b3c8f597ef8611ae8be252b367e2357dfe71",
+   "license": "CC BY 3.0"
+  }
+ ],
+ "mix": {
+  "music_db": -6.0,
+  "duck_db": -10.0,
+  "crossfade": 4.0,
+  "fade_in": 2.0,
+  "fade_out": 5.0
+ },
+ "captions_on_screen": false,
+ "fps": 60,
+ "supersampling": 3,
+ "map_geometry": "cache/japan-center/video/geom.pkl（mapdraw.build_geometry で再生成）",
+ "python": "3.12.3",
+ "packages": {
+  "numpy": "2.5.4",
+  "pillow": "13.0.0",
+  "imageio-ffmpeg": "0.6.0",
+  "requests": "2.34.2",
+  "shapely": "2.2.0",
+  "pyproj": "3.8.0"
+ }
+}

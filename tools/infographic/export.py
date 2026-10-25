@@ -159,12 +159,13 @@ def shot_list(tl, fps, title):
 
 
 def export(tl, theme, out_dir, name, music=None, effects=None, fps=60, crf=18, captions=False, only=None,
-           workers=1, target_lufs=-16.0, true_peak=-1.5, info=None):
+           workers=1, target_lufs=-16.0, true_peak=-1.5, info=None, fcpxml_captions=False):
     """シーン映像、分離した音声、final.mp4、FCPXML、字幕、manifest.json を書き出す
 
     music：ダッキング済みの BGM（bgm.ducked の結果）。effects：効果音（ナレーションと同じ時間軸）
     only：映像を描き直すシーン番号（1始まり）の集合。None なら全シーン。尺の変わったシーンと、ファイルのないシーンは常に描き直す
     info：manifest.json に加える情報（使った研究版、音声・BGM の設定など）
+    fcpxml_captions：True でナレーションの字幕を FCPXML に字幕クリップ（SRT ロール）として入れる（subtitles.srt と同じ時刻）
     """
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
@@ -239,7 +240,18 @@ def export(tl, theme, out_dir, name, music=None, effects=None, fps=60, crf=18, c
 
     (out / "subtitles.srt").write_text(srt(tl), encoding="utf-8")
     project = out / "project.fcpxml"
-    project.write_text(fcpxml.build(name, scenes, audio_paths, fps, theme.width, theme.height, SAMPLE_RATE),
+    caps = None
+    if fcpxml_captions:
+        # subtitles.srt と同じ時刻（終了は文の終わりの 0.3 秒後）。フレームに丸め、次の字幕と重ならないようにする
+        caps = []
+        cues = tl.cues
+        for i, (s0, e0, txt) in enumerate(cues):
+            a = int(round(s0 * fps))
+            b = int(round((e0 + 0.3) * fps))
+            if i + 1 < len(cues):
+                b = min(b, int(round(cues[i + 1][0] * fps)))
+            caps.append((a, min(b, bounds[-1]), txt))
+    project.write_text(fcpxml.build(name, scenes, audio_paths, fps, theme.width, theme.height, SAMPLE_RATE, captions=caps),
                        encoding="utf-8")
 
     files = [final, project, out / "subtitles.srt", *(s.path for s in scenes), *audio_paths.values()]

@@ -108,6 +108,7 @@ $PY network_centers.py     # 鉄道網・高速道路網
 $PY other_centers.py       # プロ野球・地震・都道府県・渋川市の検証・人口重心の推移
 $PY build_centers.py       # 一覧（centers.csv / centers.json）と所在地
 $PY analyze.py > ../data/analysis_output.txt
+$PY verify_concentration.py  # 追加検証①②（verify_*.csv、verify_ict.json）
 $PY ../charts/map.py       # 地図 → output/japan-center/research/centers_map.html
 cd ../../../.. && .venv/bin/python -m pytest -q projects/japan-center/research/tests
 ```

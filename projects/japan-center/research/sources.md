@@ -36,11 +36,21 @@ ID は `data/centers.csv` の source 列で使う
 | chuo_mannaka | 中央市「全国へそのまち協議会」 | https://www.city.chuo.yamanashi.jp/soshiki/kikaku/kikakusoumu/hesonomati/index.html | 2018年9月に「日本の真ん中 人が真ん中」として加盟。根拠の記述は検索結果の要約で確認（本文の地理的根拠の記述は見つからない） |
 | saku_umikara | 佐久市「日本で海岸線から一番遠い地点」（2026-06-01 更新） | https://www.city.saku.nagano.jp/kanko/kanko/spot/nature/umikaratoi.html | 1996年に国土地理院が特定、約115km、雨川ダムの南東約2,200m |
 
+## 歴史の年代（追加検証で確認）
+
+| ID | 資料 | URL | 使った内容 |
+| --- | --- | --- | --- |
+| nara_heijo | 奈良県「天平文化のど真ん中『平城京』」、奈良文化財研究所の特別展案内 | https://www.pref.nara.jp/miryoku/aruku/kikimanyo/column/c03/ 、https://www.nabunken.go.jp/news/2026/06/20260626press.html | 710年（和銅3年）、元明天皇が平城の地に都を移した。784年に長岡京へ |
+| kyoto_heian | 京都市「京都の歴史年表 都市のすがた」 | https://www2.city.kyoto.lg.jp/somu/rekishi/fm/nenpyou/toshi_nenpyo.html | 延暦13年（794年）10月に桓武天皇が新京へ移り、遷都の詔 |
+| archives_tokyo | 国立公文書館「変貌 5.江戸城を皇居と定め東京城と改称」「8.明治天皇、東京へ再び行幸」 | https://www.archives.go.jp/exhibition/digital/henbou/contents/05.html 、https://www.archives.go.jp/exhibition/digital/henbou/contents/08.html | 明治元年（1868年）10月に江戸城を皇居と定め東京城と改称、明治2年（1869年）に再幸し太政官が移る |
+
+- 確認は検索結果に示された公的機関のページの記載による（2026-10-25）。本文は要約で確認した
+
 ## 通説（一次資料を確認していない）
 
 | ID | 内容 | 扱い |
 | --- | --- | --- |
-| tsusetsu | 歴代の宮・都・幕府の年代と所在地（飛鳥〜江戸） | 年代は日本史の通説。宮跡の位置は国土地理院の住所検索で町名の代表点を求めた。動画で使う場合は史跡の指定資料（文化庁「国指定文化財等データベース」など）で確認する |
+| tsusetsu | 歴代の宮・都・幕府の年代と所在地（飛鳥〜江戸）のうち、上の3つ以外 | 年代は日本史の通説（動画では示さない）。宮跡の位置は国土地理院の住所検索で町名の代表点を求めた。動画で使う場合は史跡の指定資料（文化庁「国指定文化財等データベース」など）で確認する |
 
 ## 利用条件
 

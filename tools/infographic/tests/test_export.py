@@ -71,6 +71,24 @@ def test_fcpxml_structure_and_dtd(tmp_path):
     assert not [x for x in problems if "失敗" in x or "見つからない" in x], problems
 
 
+def test_fcpxml_captions(tmp_path):
+    """字幕は開始を含むシーンのクリップに、クリップ内の時刻で接続し、DTD に通る"""
+    for n in ("a.mov", "b.mov", "n.wav"):
+        (tmp_path / n).write_bytes(b"")
+    scenes = [fcpxml.SceneClip("S001", "冒頭", tmp_path / "a.mov", 90, [fcpxml.Marker(0, "S001 冒頭")]),
+              fcpxml.SceneClip("S002", "次", tmp_path / "b.mov", 60, [])]
+    text = fcpxml.build("テスト", scenes, {"narration": tmp_path / "n.wav"}, fps=30,
+                        captions=[(15, 60, "一つ目"), (100, 130, "二つ目 & <記号>")])
+    p = tmp_path / "project.fcpxml"
+    p.write_text(text, encoding="utf-8")
+    clips = ET.parse(p).getroot().find("./event/project/sequence/spine").findall("asset-clip")
+    c0, c1 = clips[0].find("caption"), clips[1].find("caption")
+    assert c0.get("offset") == "1/2s" and c0.get("duration") == "3/2s" and c0.get("role").startswith("SRT")
+    assert c1.get("offset") == "1/3s" and c1.find("text/text-style").text == "二つ目 & <記号>"
+    problems = fcpxml.validate(p)
+    assert not [x for x in problems if "失敗" in x or "見つからない" in x], problems
+
+
 def test_relink(tmp_path):
     a = tmp_path / "old" / "scenes" / "scene-001.mov"
     a.parent.mkdir(parents=True)
