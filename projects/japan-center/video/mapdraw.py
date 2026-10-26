@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
+from PIL import Image
 
 HERE = Path(__file__).resolve().parent
 PROJECT = HERE.parent
@@ -177,8 +178,24 @@ def _line(cv, p, fill, width=1.0, closed=False):
     cv.d._d.line(a.ravel().tolist(), fill=fill, width=max(1, int(round(width * k))), joint="curve")
 
 
-def draw_base(cv, cam, prefs=True, rail=0.0, highlight_pref=None, highlight_alpha=0.0, fine=None):
-    """海・陸地・都道府県界（・鉄道）"""
+def _credit(cv, text, alpha):
+    """衛星画像の出典（右下）"""
+    size = 20
+    w = cv.text_width(text, size)
+    x1, y = cv.th.width - 24, 1030
+    if 0 < alpha < 1:
+        cv.sat_alpha = max(getattr(cv, "sat_alpha", 0), alpha)
+        fade(cv, alpha, lambda a: _credit(cv, text, 1.0), (x1 - w - 20, y - 20, x1 + 4, y + 20))
+        return
+    cv.rect((x1 - w - 16, y - 16, x1, y + 16), (255, 255, 255), alpha * 0.9, radius=6)
+    cv.text((x1 - w - 8, y), text, size, color=cv.th.sub, alpha=alpha, anchor="lm")
+
+
+def draw_base(cv, cam, prefs=True, rail=0.0, highlight_pref=None, highlight_alpha=0.0, fine=None, satellite=0.0):
+    """海・陸地・都道府県界（・鉄道）
+
+    satellite：衛星画像の最大の濃さ（0〜1）。拡大の場面で指定すると、縮尺に応じて衛星画像に切り替える（satellite.py）
+    """
     W, H = cv.th.width, cv.th.height
     cv.rect((0, 0, W, H), SEA)
     g = geometry()
@@ -226,6 +243,31 @@ def draw_base(cv, cam, prefs=True, rail=0.0, highlight_pref=None, highlight_alph
             if isl["area"] / cam.kmpp ** 2 < 2:
                 continue
             _line(cv, cam.pxa(a), COAST, 1.2, closed=True)
+    sat_a = 0.0
+    if satellite > 0:
+        import satellite as SAT_
+        sat_a = satellite * SAT_.alpha_for(cam.kmpp)
+        if sat_a > 0:
+            img, mask = SAT_.render(cam, W, H, cv.ss)
+            if img is not None:
+                blended = Image.blend(cv.img, img, sat_a)
+                if mask is None:
+                    cv.img.paste(blended)
+                else:
+                    cv.img.paste(blended, (0, 0), mask)
+                # 写真の上では都道府県界を白い細線で示す（位置の手がかり）
+                col = mix((255, 255, 255), (120, 120, 120), 0.6)
+                for pc, parts in g["prefs"].items():
+                    for a in parts:
+                        if a[:, 0].max() < vx0 or a[:, 0].min() > vx1 or a[:, 1].max() < vy0 or a[:, 1].min() > vy1:
+                            continue
+                        _line(cv, cam.pxa(a), col, 1.2 * sat_a, closed=True)
+                credit = lambda: _credit(cv, SAT_.SHORT_CREDIT, sat_a)
+                later = getattr(cv, "_later", None)
+                later.append(credit) if later is not None else credit()
+            else:
+                sat_a = 0.0
+    cv.sat_alpha = sat_a
     if rail > 0:
         col = mix(RAIL, LAND, rail)
         for a in g["rail"]:
@@ -240,7 +282,7 @@ _PREF_LABELS = None
 def pref_labels(cv, cam, alpha=1.0, size=28, avoid=()):
     """都道府県名（拡大した地図の手がかり）。位置は統計局の都道府県の人口重心（陸上にある）"""
     global _PREF_LABELS
-    if alpha <= 0 or cam.kmpp > 1.2:
+    if alpha <= 0 or cam.kmpp > 1.2 or getattr(cv, "sat_alpha", 0) > 0.3:
         return
     if _PREF_LABELS is None:
         import csv
@@ -265,6 +307,9 @@ def scale_bar(cv, cam, alpha=1.0, x=120, y=930):
     """縮尺（km）。画面上で 120〜300px になるきりのよい長さ"""
     if alpha <= 0:
         return
+    if 0 < alpha < 1 and getattr(cv, "sat_alpha", 0) > 0:
+        fade(cv, alpha, lambda a: scale_bar(cv, cam, a, x, y), (x - 20, y - 50, x + 340, y + 26))
+        return
     for km in (1, 2, 5, 10, 20, 50, 100, 200, 500):
         if km / cam.kmpp >= 120:
             break
@@ -275,6 +320,38 @@ def scale_bar(cv, cam, alpha=1.0, x=120, y=930):
     cv.line([(x, y - 10), (x, y + 6)], col, 3, alpha)
     cv.line([(x + w, y - 10), (x + w, y + 6)], col, 3, alpha)
     cv.text((x + w / 2, y - 14), f"{km}km", 24, color=col, alpha=alpha, anchor="md")
+
+
+def fade(cv, alpha, fn, box=None):
+    """fn() を不透明度 alpha で重ねて描く（写真の上用）
+
+    共通の描画部品はフェードを背景色との混色で表すため、写真の上では背景色の四角が一瞬現れる。
+    写真が出ている場面では、いったん不透明で描いてから元の画像と混ぜる。box（出力解像度の座標）で混ぜる範囲を限る
+    """
+    if alpha <= 0:
+        return
+    if alpha >= 1 or getattr(cv, "sat_alpha", 0) <= 0:
+        fn(alpha)
+        return
+    from tools.infographic.canvas import ScaledDraw
+    from PIL import ImageDraw
+    k = cv.ss
+    W, H = cv.img.size
+    if box is None:
+        b = (0, 0, W, H)
+    else:
+        b = (max(0, int(box[0] * k) - 4), max(0, int(box[1] * k) - 4), min(W, int(box[2] * k) + 4), min(H, int(box[3] * k) + 4))
+        if b[2] <= b[0] or b[3] <= b[1]:
+            return
+    orig, d = cv.img, cv.d
+    base = orig.crop(b)
+    tmp = orig.copy()
+    cv.img, cv.d = tmp, ScaledDraw(ImageDraw.Draw(tmp), k)
+    try:
+        fn(1.0)
+    finally:
+        cv.img, cv.d = orig, d
+    orig.paste(Image.blend(base, tmp.crop(b), alpha), b[:2])
 
 
 def region(cv, cam, polys, color, alpha):
@@ -290,6 +367,10 @@ def region(cv, cam, polys, color, alpha):
 def marker(cv, x, y, category, alpha=1.0, r=11, ring=0.0, bg=LAND):
     """中心点の記号（画面座標）。ring は出現時の輪（0〜1 で広がって消える）"""
     if alpha <= 0:
+        return
+    if 0 < alpha < 1 and getattr(cv, "sat_alpha", 0) > 0:
+        rr = r * (1.4 + 2.6) + 8
+        fade(cv, alpha, lambda a: marker(cv, x, y, category, 1.0, r, ring, bg), (x - rr, y - rr, x + rr, y + rr))
         return
     color, shape = STYLE[category]
     c = mix(color, bg, alpha)
@@ -328,6 +409,10 @@ def label(cv, x, y, text, sub=None, dx=24, dy=0, alpha=1.0, size=30, anchor="l",
     h = size + 20 + (s2 + 8 if sub else 0)
     bx = x + dx if anchor == "l" else x + dx - w
     by = y + dy - h / 2
+    if 0 < alpha < 1 and getattr(cv, "sat_alpha", 0) > 0:
+        box = (min(x, bx) - 6, min(y, by) - 6, max(x, bx + w) + 6, max(y, by + h) + 6)
+        fade(cv, alpha, lambda a: label(cv, x, y, text, sub, dx, dy, a, size, anchor, color, leader), box)
+        return (bx, by, bx + w, by + h)
     if leader and (abs(dx) > 30 or abs(dy) > 10):
         ex = bx if anchor == "l" else bx + w
         cv.line([(x, y), (ex, y + dy)], th.sub, 2, alpha)

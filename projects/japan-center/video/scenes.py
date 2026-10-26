@@ -125,6 +125,10 @@ def pill_text(cv, xy, s, size, alpha=1.0, bold=True, color=None, anchor="mm", pa
     w = cv.text_width(s, size, bold)
     x, y = xy
     left = x - w / 2 if anchor[0] == "m" else (x - w if anchor[0] == "r" else x)
+    if 0 < alpha < 1 and getattr(cv, "sat_alpha", 0) > 0:
+        box = (left - pad[0], y - size / 2 - pad[1], left + w + pad[0], y + size / 2 + pad[1])
+        M.fade(cv, alpha, lambda a: pill_text(cv, xy, s, size, 1.0, bold, color, anchor, pad, fill), box)
+        return
     cv.rect((left - pad[0], y - size / 2 - pad[1], left + w + pad[0], y + size / 2 + pad[1]), fill, alpha, radius=12)
     cv.text((left, y), s, size, bold=bold, color=color, alpha=alpha, anchor="lm")
 
@@ -142,7 +146,17 @@ def map_title(cv, s, alpha=1.0):
     _later(cv, lambda: pill_text(cv, (W / 2, 84), s, cv.th.size_title, alpha))
 
 
+def sentence(s):
+    """注記は文として「。」で終える（注記の書式を動画内でそろえる）"""
+    return s if s.endswith("。") else s + "。"
+
+
+def note(cv, s, alpha=1.0, y=900):
+    cv.note(sentence(s), alpha, y=y)
+
+
 def map_note(cv, s, alpha=1.0):
+    s = sentence(s)
     if cv.text_width(s, cv.th.size_note) > W - 2 * cv.th.margin:
         raise ValueError(f"注記が1行に収まりません：{s}")
     _later(cv, lambda: pill_text(cv, (W / 2, 1000), s, cv.th.size_note, alpha, bold=False, color=cv.th.sub, pad=(18, 8)))
@@ -298,7 +312,7 @@ def build(N, voice_credit, music_credit=""):
                 col = M.STYLE["最大集積地"][0]
                 cv.rect((cx - 145, y - 22, cx - 95, y + 22), mix(col, th.bg, 0.35 * b), radius=4)
             cv.text((cx - 80, y), text, th.size_note + 6, bold=True, alpha=b, anchor="lm")
-        cv.note("同じ考え方の言い換え（範囲や集計単位の違い）を含む。考え方としては30前後", appear(st.t, st.at(4) + 0.8, 0.6), y=940)
+        note(cv, "同じ考え方の言い換え（範囲や集計単位の違い）を含む。考え方としては30前後", appear(st.t, st.at(4) + 0.8, 0.6), y=940)
 
     scenes.append(Scene("集めた中心の種類", [
         Line("集めた中心は、大きく7つの種類に分けられます。"),
@@ -335,7 +349,7 @@ def build(N, voice_credit, music_credit=""):
         bx = W / 2 + 380
         cv.text((bx, cy - 150), "最も多い場所", th.size_body, bold=True, color=th.sub, alpha=c, anchor="md")
         cv.line([(bx, cy - 140), (bx, cy - 90)], th.sub, 2, c)
-        cv.note("つり合う点の上に、量があるとは限らない", appear(st.t, st.at(2) + 0.8, 0.6), y=820)
+        note(cv, "つり合う点の上に、量があるとは限らない", appear(st.t, st.at(2) + 0.8, 0.6), y=820)
 
     scenes.append(Scene("重心とは", [
         Line("まず、この動画で何度も出てくる、重心という考え方です。"),
@@ -355,7 +369,7 @@ def build(N, voice_credit, music_credit=""):
         th = cv.th
         keys = [(0, MAIN4), (st.at(2) + 1.2, MAIN4), (st.at(2) + 3.0, NOTO)]
         cam = M.cam_at(keys, st.t)
-        M.draw_base(cv, cam)
+        M.draw_base(cv, cam, satellite=1.0)
         map_title(cv, "国土の重心", appear(st.t, 0, 0.5))
         # マス目（40km。説明用の粗い格子。計算は 1km）
         gp = 1 - appear(st.t, st.at(2) + 0.6, 0.8)
@@ -429,7 +443,7 @@ def build(N, voice_credit, music_credit=""):
     def d_far(cv, st):
         th = cv.th
         cam = M.cam_at([(0, ALL), (0.6, ALL), (st.at(1), SAKU)], st.t)
-        M.draw_base(cv, cam)
+        M.draw_base(cv, cam, satellite=1.0)
         map_title(cv, "海から最も遠い地点", appear(st.t, 0, 0.5))
         t0 = st.at(1) + 0.6
         a = appear(st.t, t0, 0.4)
@@ -437,11 +451,12 @@ def build(N, voice_credit, music_credit=""):
         p = ease((st.t - st.at(2)) / 1.4) if st.t > st.at(2) else 0.0
         if p > 0:
             r = rad / cam.kmpp * p
-            cv.d.ellipse((sx - r, sy - r, sx + r, sy + r), outline=hexrgb("2E6BD1"), width=3)
+            # 衛星画像の上で見えるよう白い線にする
+            cv.d.ellipse((sx - r, sy - r, sx + r, sy + r), outline=WHITE, width=3.5)
             cx, cy = cam.px(*coast)
             q = appear(st.t, st.at(2) + 1.4, 0.4)
-            cv.line([(sx, sy), (sx + (cx - sx) * p, sy + (cy - sy) * p)], hexrgb("2E6BD1"), 3, 1.0)
-            cv.d.ellipse((cx - 8, cy - 8, cx + 8, cy + 8), fill=mix(hexrgb("2E6BD1"), M.LAND, q))
+            cv.line([(sx, sy), (sx + (cx - sx) * p, sy + (cy - sy) * p)], WHITE, 3.5, 1.0)
+            cv.d.ellipse((cx - 9, cy - 9, cx + 9, cy + 9), fill=WHITE)
             M.label(cv, (sx + cx) / 2, (sy + cy) / 2, f"約{round(N['sea_km'])}km", None, 20, 0, q, 34, leader=False)
         mk(cv, cam, "farthest_from_sea", a, st.t, t0)
         lab(cv, cam, "farthest_from_sea", "長野県佐久市", "海岸線から最も遠い", dx=30, dy=-70, a=appear(st.t, t0 + 0.5, 0.5))
@@ -493,11 +508,11 @@ def build(N, voice_credit, music_credit=""):
     def d_track(cv, st):
         th = cv.th
         cam = M.cam_at([(0, WIDE_C), (0.4, WIDE_C), (st.at(0) + 2.0, TRACK), (st.at(3), TRACK), (st.at(3) + 2.5, CENTER)], st.t)
-        M.draw_base(cv, cam)
+        M.draw_base(cv, cam, satellite=1.0)
         M.scale_bar(cv, cam, appear(st.t, st.at(0) + 2.0, 0.5))
         x1_, y1_ = cam.px(*P("pop2020_official"))
-        cv.text((x1_ - 150, y1_ + 140), "岐阜県", 34, color=hexrgb("8A949E"),
-                alpha=appear(st.t, st.at(0) + 2.0, 0.5) * (1 - appear(st.t, st.at(3), 0.4)), anchor="mm")
+        pill_text(cv, (x1_ - 150, y1_ + 140), "岐阜県", 30,
+                  appear(st.t, st.at(0) + 2.0, 0.5) * (1 - appear(st.t, st.at(3), 0.4)), bold=False, color=cv.th.sub, pad=(14, 6))
         map_title(cv, "人口重心の移動", appear(st.t, 0, 0.5))
         p = ease((st.t - st.at(1)) / 3.0) if st.t > st.at(1) else 0.0
         pts = [(y, m, *cam.px(x, yy)) for y, m, x, yy in N["hist"]]
@@ -620,7 +635,7 @@ def build(N, voice_credit, music_credit=""):
             cv.rect((rx0, y + 46, rx0 + bw * g / n * p, y + 86), hexrgb("D9822B"), b, radius=4)
             cv.text((rx0 + bw + 16, y + 66), f"{g}/{n}", th.size_body - 4, bold=True, alpha=b, anchor="lm")
         c = appear(st.t, st.at(4), 0.6)
-        cv.note(f"人口重心から50km 以内の陸地の約{round(N['ring50'] * 10)}割が岐阜県。人口と似た分布の量は、重心も人口重心の近くに来る", c, y=860)
+        note(cv, f"人口重心から50km 以内の陸地の約{round(N['ring50'] * 10)}割が岐阜県。人口と似た分布の量は、重心も人口重心の近くに来る", c, y=860)
 
     scenes.append(Scene("岐阜に集まるのはなぜか", [
         Line("ただし、これは岐阜が日本の活動の中心だ、という意味ではありません。"),
@@ -671,7 +686,7 @@ def build(N, voice_credit, music_credit=""):
     def d_haya(cv, st):
         th = cv.th
         cam = M.cam_at([(0, OUTV), (0.3, OUTV), (st.at(0) + 1.8, HAYA), (st.at(3) - 0.2, HAYA), (st.at(3) + 1.6, SEESAW)], st.t)
-        M.draw_base(cv, cam)
+        M.draw_base(cv, cam, satellite=1 - appear(st.t, st.at(3), 0.8))
         M.pref_labels(cv, cam, 1 - appear(st.t, st.at(3), 0.4), avoid=[(*cam.px(hx_, hy_), 420)])
         M.scale_bar(cv, cam, appear(st.t, st.at(0) + 1.8, 0.5) * (1 - appear(st.t, st.at(3), 0.4)))
         map_title(cv, "情報通信業の重心", appear(st.t, 0, 0.5))
@@ -794,7 +809,7 @@ def build(N, voice_credit, music_credit=""):
         th = cv.th
         cam = M.cam_at([(0, NAGOYA), (st.at(0) + 0.3, NAGOYA), (st.at(1) - 0.3, TOKYO), (st.at(3) - 0.5, TOKYO),
                         (st.at(3) + 1.5, MAIN4), (st.at(4), MAIN4), (st.at(4) + 1.6, HIST)], st.t)
-        M.draw_base(cv, cam, rail=appear(st.t, st.at(1) - 0.3, 0.6) * 0.5 * (1 - appear(st.t, st.at(3) - 0.5, 0.4)))
+        M.draw_base(cv, cam, satellite=1.0)
         M.scale_bar(cv, cam, appear(st.t, st.at(1), 0.5) * (1 - appear(st.t, st.at(3) - 0.5, 0.4)))
         map_title(cv, "法律と歴史の中心", appear(st.t, 0, 0.5))
         for k, (cid, name, dx, dy, an) in enumerate(tokyo_ids):
@@ -842,16 +857,16 @@ def build(N, voice_credit, music_credit=""):
         th = cv.th
         cam = M.cam_at([(0, HIST), (st.at(0) + 1.0, TOWN), (st.at(2) + 0.2, TOWN), (st.at(3), TATSU),
                         (st.at(4) - 0.2, TATSU), (st.at(4) + 1.2, TOWN)], st.t)
-        M.draw_base(cv, cam)
+        M.draw_base(cv, cam, satellite=1.0)
         M.pref_labels(cv, cam, 0.8)
         M.scale_bar(cv, cam, appear(st.t, st.at(3), 0.5) * (1 - appear(st.t, st.at(4) - 0.2, 0.4)))
         map_title(cv, "日本の中心を名乗る町", appear(st.t, 0, 0.5))
         a = appear(st.t, st.at(1), 0.5)
-        draw_geo_line(cv, cam, meridian(135, 33, 37), hexrgb("B8901E"), 2, a)
-        draw_geo_line(cv, cam, parallel(35, 133, 137), hexrgb("B8901E"), 2, a)
+        draw_geo_line(cv, cam, meridian(135, 33, 37), hexrgb("F2C94C"), 3, a)
+        draw_geo_line(cv, cam, parallel(35, 133, 137), hexrgb("F2C94C"), 3, a)
         b = appear(st.t, st.at(2), 0.5)
-        draw_geo_line(cv, cam, meridian(138, 34, 38), hexrgb("B8901E"), 2, b)
-        draw_geo_line(cv, cam, parallel(36, 136, 140), hexrgb("B8901E"), 2, b)
+        draw_geo_line(cv, cam, meridian(138, 34, 38), hexrgb("F2C94C"), 3, b)
+        draw_geo_line(cv, cam, parallel(36, 136, 140), hexrgb("F2C94C"), 3, b)
         times = [st.at(1) + 0.6, st.at(2) + 0.6, st.at(3) + 1.0, st.at(4) + 1.4, st.at(4) + 1.9, st.at(4) + 2.4]
         for (cid, name, sub, dx, dy, an), t0 in zip(claims, times):
             al = appear(st.t, t0, 0.4)
@@ -960,7 +975,9 @@ def build(N, voice_credit, music_credit=""):
 
     # 19 データとクレジット
     credits = [("統計", "総務省統計局（国勢調査・人口重心）、統計ダッシュボード、各府省の統計"),
-               ("地図", "国土地理院 地球地図日本、国土数値情報 鉄道（CC BY 4.0）"),
+               ("地図", "国土地理院 地球地図日本、国土数値情報 鉄道（CC BY 4.0）を加工して作成"),
+               ("衛星画像", "地理院タイル（全国ランドサットモザイク画像）を加工して作成"),
+               ("", "データソース：Landsat8画像（GSI,TSIC,GEO Grid/AIST）, Landsat8画像（courtesy of the U.S. Geological Survey）, 海底地形（GEBCO）"),
                ("音声", voice_credit),
                ("音楽", music_credit or "なし")]
 
@@ -968,17 +985,18 @@ def build(N, voice_credit, music_credit=""):
         th = cv.th
         a = appear(st.t, st.at(0), 0.6)
         svgicons.draw(cv, "map-2", W / 2, 230, 96, th.text, a)
-        cv.text((W / 2, 320), "計算の方法・出典・限界は概要欄に", th.size_body, bold=True, alpha=a, anchor="ma")
+        cv.text((W / 2, 320), "計算の方法・出典・限界は概要欄にまとめています。", th.size_body, bold=True, alpha=a, anchor="ma")
         b = appear(st.t, st.at(1), 0.6)
-        cv.text((W / 2, 400), "重心の位置は、式・代表点・地図の縮尺の選び方で数km〜数十km 動く", th.size_note + 4,
+        cv.text((W / 2, 400), "重心の位置は、式・代表点・地図の縮尺の選び方で数km〜数十km 動きます。", th.size_note + 4,
                 color=th.sub, alpha=b, anchor="ma")
         c = appear(st.t, st.at(1) + 1.0, 0.6)
-        bw = 120 + max(cv.text_width(body, th.size_note + 2) for _, body in credits)
+        cs = th.size_note
+        bw = 150 + max(cv.text_width(body, cs) for _, body in credits)
         left = (W - bw) / 2
         for k, (h, body) in enumerate(credits):
-            y = 540 + k * 64
-            cv.text((left, y), h, th.size_note + 2, bold=True, alpha=c)
-            cv.text((left + 120, y), body, th.size_note + 2, color=th.sub, alpha=c)
+            y = 500 + k * 56
+            cv.text((left, y), h, cs, bold=True, alpha=c)
+            cv.text((left + 150, y), body, cs, color=th.sub, alpha=c)
 
     scenes.append(Scene("データとクレジット", [
         Line("使ったデータと計算の方法は、概要欄にまとめています。"),

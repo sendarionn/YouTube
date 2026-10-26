@@ -1,7 +1,7 @@
 """書き出し結果の品質確認（AGENTS.md「品質確認」の自動化できる項目）
 
 - export.verify：final.mp4 とシーン映像のフレーム一致、尺、音声の長さ、FCPXML の DTD と素材
-- 動き：final.mp4 を縮小して全フレームの差分を測り、急な変化（場面転換以外の跳び）と、動いている区間での停止（同じフレームの連続）を数える
+- 動き：final.mp4 を縮小して全フレームの差分を測り、跳び（前後より突出した変化。場面転換を除く）と、動いている区間での停止（同じフレームの連続）を数える
 - 音量：final.mp4 の統合ラウドネスとトゥルーピーク、ナレーション中と無音部の BGM との差
 - 字幕：subtitles.srt の文が台本（scenes.py の Line.text）と同じ順で一致するか、FCPXML の字幕クリップの数
 出力：output/japan-center/video/qa.json
@@ -51,11 +51,18 @@ def main():
     near_cut = np.zeros(len(d), bool)
     for c in cuts:
         near_cut[max(0, c - 40):c + 40] = True
-    jumps = [(int(i + 1), round(float(v), 2)) for i, v in enumerate(d) if v > 6 and not near_cut[i]]
+    # 跳び：前後3フレームの変化（中央値）より3倍以上大きく、3 を超える変化（衛星画像の模様が動く拡大は、
+    # 変化そのものは大きいが前後と連続するため跳びにしない）
+    jumps = []
+    for i in range(3, len(d) - 3):
+        nb = max(float(np.median(d[i - 3:i])), float(np.median(d[i + 1:i + 4])), 0.3)
+        if d[i] > 3 * nb and d[i] > 3 and not near_cut[i]:
+            jumps.append((int(i + 1), round(float(d[i]), 2), round(nb, 2)))
     # 動いている区間（前後のフレームが変化している）の中に、変化 0 のフレームが挟まる＝カクつき
-    stutter = [int(i + 1) for i in range(1, len(d) - 1) if d[i] < 0.01 and d[i - 1] > 0.3 and d[i + 1] > 0.3]
+    stutter = [int(i + 1) for i in range(1, len(d) - 1)
+               if d[i] < 0.01 and d[i - 1] > 0.3 and d[i + 1] > 0.3 and not near_cut[i]]
     rep["motion"] = {"frames": int(len(f)), "max_diff_outside_cuts": round(float(d[~near_cut].max()), 2),
-                     "jumps_over_6": jumps[:20], "n_jumps": len(jumps), "stutter_frames": stutter[:20],
+                     "jumps": jumps[:20], "n_jumps": len(jumps), "stutter_frames": stutter[:20],
                      "n_stutter": len(stutter), "moving_share": round(float((d > 0.05).mean()), 3)}
 
     # 音量
